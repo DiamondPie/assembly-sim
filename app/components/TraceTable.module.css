@@ -1,0 +1,166 @@
+.root {
+  font-family: 'Google Sans Code', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  color: var(--text-primary, #fff);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Toolbar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  height: 2rem;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary, #484f58);
+}
+
+.badge {
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-secondary, #00b8d4);
+  background: color-mix(in oklab, var(--accent-secondary, #00b8d4), transparent 85%);
+  border: 1px solid color-mix(in oklab, var(--accent-secondary, #00b8d4), transparent 70%);
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+}
+
+/* ── Table container ── */
+.tableWrap {
+  border: 1px solid var(--border-color-1, #ffffff14);
+  border-radius: 0.6rem;
+  background: var(--content-1, #ffffff0d);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  position: relative;
+}
+
+.tableWrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.6rem;
+  background: linear-gradient(180deg, #00b8d408 0%, transparent 35%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 表头行：用 grid 排列，不参与滚动 */
+.headerRow {
+  display: grid;
+  width: max-content; /* 确保宽度撑开到 tableWidth */
+  background: #161b22; /* 必须给一个非透明背景，否则滚动时内容会透出来 */
+  border-bottom: 1px solid var(--border-color-1, #ffffff14);
+  /* background: rgba(255, 255, 255, 0.03); */
+  position: sticky;    /* 核心修改 */
+  top: 0;             /* 粘在顶部 */
+  z-index: 10;        /* 确保在数据行之上 */
+}
+
+/* 可滚动的数据区域 */
+.scrollBody {
+  overflow: auto;
+  /* 自定义滚动条，与主页面一致 */
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-tertiary, #484f58) transparent;
+}
+
+.scrollBody::-webkit-scrollbar       { width: 4px; }
+.scrollBody::-webkit-scrollbar-track { background: transparent; }
+.scrollBody::-webkit-scrollbar-thumb { background: var(--text-tertiary, #484f58); border-radius: 999px; }
+
+/* 每一行数据：用 grid 排列 */
+.bodyRow {
+  display: grid;
+  border-bottom: 1px solid var(--border-color-1, #ffffff14);
+}
+
+.bodyRow:last-child {
+  border-bottom: none;
+}
+
+/* ── Cells ── */
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.82rem;
+  border-right: 1px solid var(--border-color-1, #ffffff14);
+  position: relative;
+  transition: background 0.15s ease, color 0.15s ease;
+  overflow: hidden;          /* 新增 */
+}
+
+.cellText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+}
+
+/* remove border-right on last cell in each row dynamically via JS gridTemplateColumns —
+   easier to just suppress overflow */
+.tableWrap { 
+  border: 1px solid var(--border-color-1, #ffffff14);
+  border-radius: 0.6rem;
+  background: var(--content-1, #ffffff0d);
+  backdrop-filter: blur(8px);
+  overflow: hidden;    /* 必须设为 hidden，否则圆角会被内部内容顶破 */
+  position: relative;
+  width: 100%;         /* 限制宽度 */
+}
+
+.headerCell {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-tertiary, #484f58);
+  border-bottom: 1px solid var(--border-color-1, #ffffff14);
+  padding: 0.55rem 0.75rem;
+}
+
+.dataCell {
+  color: var(--text-secondary, #8b949e);
+  animation: traceRowIn 0.3s ease both;
+}
+
+.rowEven {
+  background: rgba(255,255,255,0.015);
+}
+
+/* PC column gets accent colour */
+.cellPc {
+  color: var(--accent-primary, #e9a0ff);
+  opacity: 0.7;
+}
+
+/* Changed value highlight */
+.cellChanged {
+  color: var(--text-primary, #fff);
+  background: color-mix(in oklab, var(--accent-secondary, #00b8d4), transparent 91%) !important;
+}
+
+.cellChanged::after {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--accent-secondary, #00b8d4);
+  opacity: 0.6;
+  border-radius: 0 2px 2px 0;
+}
+
+/* ── Animations ── */
+@keyframes traceRowIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

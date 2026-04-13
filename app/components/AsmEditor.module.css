@@ -1,0 +1,285 @@
+.asmRoot {
+  font-family: 'Google Sans Code', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  color: var(--text-primary, #fff);
+  width: 100%;
+  margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;    /* 占满父级给出的高度 */
+  overflow: hidden; /* 防止根容器溢出 */
+}
+
+.asmToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  min-height: 2rem;
+
+  overflow: hidden; /* 核心：防止子元素溢出撑开父级 */
+  white-space: nowrap; /* 核心：禁止内部所有元素换行 */
+}
+
+.asmTitle {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary, #484f58);
+
+  flex-shrink: 1; /* 允许标题在必要时缩小 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 文字过长时显示省略号 */
+  min-width: 0; /* 配合 flex-shrink 必须加这行 */
+}
+
+.asmActions { display: flex; gap: 0.5rem; }
+
+.asmBtn {
+  font-family: inherit;
+  font-size: 0.72rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color-1, #ffffff14);
+  background: var(--content-1, #ffffff0d);
+  color: var(--text-secondary, #8b949e);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.04em;
+
+  flex-shrink: 0; /* 按钮文字很重要，尽量不要压缩按钮 */
+  white-space: nowrap; /* 确保按钮文字始终在一行 */
+}
+
+.asmBtn:hover {
+  border-color: #e9a0ff44;
+  color: var(--accent-primary, #e9a0ff);
+  background: #e9a0ff12;
+}
+
+.asmBtnPrimary {
+  border-color: #e9a0ff44;
+  color: var(--accent-primary, #e9a0ff);
+  background: #e9a0ff12;
+}
+
+.asmBtnPrimary:hover {
+  background: #e9a0ff22;
+  box-shadow: 0 0 18px #e9a0ff15;
+}
+
+.asmTableContainer {
+  border: 1px solid var(--border-color-1, #ffffff14);
+  border-radius: 0.6rem;
+  background: var(--content-1, #ffffff0d);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  position: relative;
+  
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+
+  height: 100%;
+  min-height: 0;
+  display: flex; 
+  flex-direction: column;
+}
+
+.asmTableContainer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.6rem;
+  background: linear-gradient(180deg, #e9a0ff06 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.asmHeader {
+  display: grid;
+  /* grid-template-columns: 168px 140px 1fr 32px; */
+  grid-template-columns: 50px 1fr 1fr 2fr 32px;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border-color-1, #ffffff14);
+  background: rgba(255,255,255,0.03);
+  position: relative;
+  z-index: 1;
+}
+
+.asmHeaderCell {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary, #484f58);
+  padding: 0 0.5rem;
+}
+
+.asmHeaderCellRight { text-align: right; }
+.asmHeaderCellCenter { text-align: center; }
+
+.asmRows { 
+  position: relative; 
+  z-index: 1; 
+  flex: 1;
+  overflow-y: auto;
+  /* 滚动条宽度：auto, thin, none */
+  scrollbar-width: thin; 
+  /* 滚动条颜色：[滑块颜色] [轨道颜色] */
+  scrollbar-color: var(--border-color-1, #484f58) transparent;
+}
+
+.asmRow {
+  display: grid;
+  /* grid-template-columns: 180px 140px 1fr 32px; */
+  grid-template-columns: 50px 1fr 1fr 2fr 32px;
+  width: 100%;
+  align-items: stretch;
+  border-bottom: 1px solid var(--border-color-1, #ffffff14);
+  transition: background 0.15s ease;
+  position: relative;
+}
+
+.asmRow:hover { background: rgba(255,255,255,0.03); }
+
+.asmRowFocused {
+  background: rgba(233,160,255,0.04) !important;
+}
+
+.asmRowFocused::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--accent-primary, #e9a0ff);
+  opacity: 0.7;
+}
+
+.asmCell {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  border-right: 1px solid var(--border-color-1, #ffffff14);
+  min-height: 38px;
+}
+
+.asmCellAddr {
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #888); /* 白色偏灰 */
+  background: rgba(255, 255, 255, 0.02); /* 微弱背景色区分 */
+  justify-content: center;
+  user-select: none; /* 禁止选中 */
+}
+
+.asmCell:last-of-type { border-right: none; }
+.asmCellLabel { justify-content: flex-end; }
+
+.asmInput {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--text-primary, #fff);
+  caret-color: var(--accent-primary, #e9a0ff);
+  padding: 0.5rem 0.25rem;
+  line-height: 1.4;
+}
+
+.asmInputLabel {
+  text-align: right;
+  color: var(--accent-primary, #e9a0ff);
+}
+
+.asmInputOpcode { color: #7dd3fc; }
+.asmInputOperand { color: #86efac; }
+
+.asmInput::placeholder {
+  color: var(--text-tertiary, #484f58);
+  font-size: 0.78rem;
+}
+
+.asmDelBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  color: var(--text-tertiary, #484f58);
+  transition: all 0.15s ease;
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  padding: 0 0.3rem;
+  font-family: inherit;
+}
+
+.asmRow:hover .asmDelBtn { opacity: 1; }
+.asmDelBtn:hover { color: #f87171; }
+
+.asmAddRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.55rem;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border-color-1, #ffffff14);
+  color: var(--text-tertiary, #484f58);
+  font-family: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.asmAddRow:hover {
+  color: var(--accent-primary, #e9a0ff);
+  background: #e9a0ff0a;
+}
+
+.asmStatus {
+  display: flex;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding: 0 0.25rem;
+  gap: 0.75rem;
+}
+
+.asmStat {
+  font-size: 0.66rem;
+  color: var(--text-tertiary, #484f58);
+  letter-spacing: 0.06em;
+}
+
+.asmStatVal { color: var(--text-secondary, #8b949e); }
+
+@keyframes asmRowAppear {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.asmRowNew { animation: asmRowAppear 0.18s ease forwards; }
+
+/* 适配移动端：如果宽度小于 600px，可以调整列比例 */
+@media (max-width: 600px) {
+  .asmHeader, .asmRow {
+    grid-template-columns: 50px 1fr 1fr 1.5fr 32px; /* 缩小 Label 的占比 */
+    gap: 4px;
+  }
+  
+  .asmInput {
+    font-size: 0.75rem; /* 缩小字体 */
+    padding: 0.4rem 0.1rem;
+  }
+
+  .asmTitle {
+    display: none; /* 手机端隐藏标题，给按钮留空间 */
+  }
+}
