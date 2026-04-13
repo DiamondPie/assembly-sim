@@ -392,7 +392,7 @@ export default function AssemblyGraph({ rows = [] }) {
   
   useEffect(() => {
     setNodes(computedNodes);
-  }, [computedNodes]);
+  }, [computedNodes, setNodes]);
 
   const isEmpty = rows.filter(r => r.opcode.trim()).length === 0;
 
