@@ -187,7 +187,7 @@ function parseBlocks(rows) {
  * Convert blocks into React Flow nodes and edges.
  * Layout: vertical stack, left-aligned.
  */
-function blocksToGraph(blocks) {
+function blocksToGraph(blocks, currentRowId) {
   if (blocks.length === 0) return { nodes: [], edges: [] };
 
   // Build label→blockId map for resolving jump targets
@@ -248,8 +248,7 @@ function blocksToGraph(blocks) {
     const instrCount = block.instructions.length;
     const estimatedH = instrCount * ROW_H + NODE_PADDING_Y;
 
-    const isConditionalJump = block.jumpTarget && 
-      !['JUMP', 'JMP', 'B', 'BR', 'CALL'].includes(block.jumpOp);
+    const isConditionalJump = block.jumpTarget && block.jumpOp === 'JUMP';
     
     if (isConditionalJump) {
       currentXOffset -= 40; 
@@ -259,7 +258,7 @@ function blocksToGraph(blocks) {
       id: block.id,
       type: 'asmBlock',
       position: { x: currentXOffset, y: yOffset },
-      data: { block, isEntry: block.isEntry, isHalt: block.isHalt, xOffset: currentXOffset },
+      data: { block, isEntry: block.isEntry, isHalt: block.isHalt, xOffset: currentXOffset, currentRowId },
       width: NODE_WIDTH,
     };
     yOffset += estimatedH + NODE_GAP_Y;
@@ -273,10 +272,10 @@ function blocksToGraph(blocks) {
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i];
     const nextId = i + 1 < blocks.length ? blocks[i + 1].id : null;
-    const isConditional = block.jumpTarget && !['JUMP', 'JMP', 'B', 'BR', 'CALL'].includes(block.jumpOp);
+    const isUnconditional = block.jumpTarget && block.jumpOp === 'JUMP';
 
     // 只要不是强制停机且有下一个节点，就生成顺序线
-    if ((isConditional || !block.isHalt) && nextId) {
+    if (!block.isHalt && !isUnconditional && nextId) {
       addEdge(block.id, nextId, '', 'sequential');
     }
   }
@@ -356,8 +355,15 @@ function AsmBlockNode({ data }) {
           const op = row.opcode.trim().toUpperCase();
           const isJ = JUMP_OPCODES.has(op);
           const isH = HALT_OPCODES.has(op);
+          const isActive = row.id === data.currentRowId;
+          
           return (
-            <div key={idx} className={clsx(styles.instrRow, isJ && styles.instrJump, isH && styles.instrHalt)}>
+            <div key={idx} className={clsx(
+              styles.instrRow, 
+              isJ && styles.instrJump, 
+              isH && styles.instrHalt,
+              isActive && styles.instrActive
+            )}>
               <span className={styles.instrOpcode}>{op || '\u00A0'}</span>
               <span className={styles.instrOperand}>{row.operand.trim() || '\u00A0'}</span>
             </div>
@@ -380,21 +386,17 @@ function AsmBlockNode({ data }) {
   );
 }
 
-// nodeTypes must be stable (defined at module level)
-const NODE_TYPES = { asmBlock: AsmBlockNode };
-
 // ─────────────────────────────────────────────
 // Main component
 // ─────────────────────────────────────────────
 
 // rows prop: same shape as AsmEditor rows
 // [{ id, label, opcode, operand }]
-export default function AssemblyGraph({ rows = [] }) {
-
+export default function AssemblyGraph({ rows = [], currentRowId = null }) {
   const { nodes: computedNodes, edges } = useMemo(() => {
     const blocks = parseBlocks(rows);
-    return blocksToGraph(blocks);
-  }, [rows]);
+    return blocksToGraph(blocks, currentRowId);
+  }, [rows, currentRowId]);
   
   const [nodes, setNodes, onNodesChange] = useNodesState(computedNodes);
   
