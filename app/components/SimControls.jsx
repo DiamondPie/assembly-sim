@@ -44,7 +44,7 @@ export default function SimControls({
   inputValue     = '',
   onInputChange,
   onInputConfirm,
-  flags          = { GT: false, LT: false, EQ: false },
+  flags          = { GT: false, LT: true, EQ: false },
   onRun,
   onStep,
   notation       = '',
