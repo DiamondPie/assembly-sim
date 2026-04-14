@@ -123,7 +123,9 @@ function parseBlocks(rows) {
     operand: r.operand.trim(),
   }));
 
-  const instructions = normalized.filter(r => r.opcode || r.label || r.operand);
+  const instructions = normalized.filter(r => 
+    (r.opcode || r.label || r.operand)
+    && r.opcode !== '.DATA');
 
   if (instructions.length === 0) return [];
 
@@ -154,6 +156,7 @@ function parseBlocks(rows) {
       current = {
         id: `block-${blocks.length}`,
         entryLabel: row.label || null,
+        entryLabelKey: row.label.trim().replace(/:$/, '') || null,
         instructions: [],
         isEntry: blocks.length === 0,
         isHalt: false,
