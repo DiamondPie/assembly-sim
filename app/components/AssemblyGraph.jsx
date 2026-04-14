@@ -401,6 +401,7 @@ export default function AssemblyGraph({ rows = [] }) {
 
   const isEmpty = rows.filter(r => r.opcode.trim()).length === 0;
 
+  const nodeTypes = useMemo(() => ({ asmBlock: AsmBlockNode }), []);
   const edgeTypes = useMemo(() => ({ jumpEdge: JumpEdge }), []);
 
   return (
@@ -421,7 +422,7 @@ export default function AssemblyGraph({ rows = [] }) {
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
-            nodeTypes={NODE_TYPES}
+            nodeTypes={nodeTypes}
             fitView
             fitViewOptions={{ padding: 0.25, includeHiddenNodes: true }}
             minZoom={0.2} 
