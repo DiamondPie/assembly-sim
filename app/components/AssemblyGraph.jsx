@@ -43,6 +43,9 @@ function JumpEdge({ sourceX, sourceY, targetX, targetY, data, style, label, labe
   const entryY = targetY - 20;   // 从顶部 Handle 向上延伸 20px
 
   const isRightTarget = data?.targetIsRight === true;
+  const color = style?.stroke ?? 'var(--text-tertiary, #484f58)';
+  const strokeWidth = style?.strokeWidth ?? 1.5;
+  const arrowScale = strokeWidth / 1.5;  // 1.5 → 1.0，2.5 → 1.667
 
   const path = isRightTarget
     ? [
@@ -74,7 +77,14 @@ function JumpEdge({ sourceX, sourceY, targetX, targetY, data, style, label, labe
     ].join(' ');
 
   return (
-    <BaseEdge path={path} style={style} label={label} labelStyle={labelStyle} labelBgStyle={labelBgStyle} />
+    <>
+      <BaseEdge path={path} style={style} label={label} labelStyle={labelStyle} labelBgStyle={labelBgStyle} />
+      <polygon
+        points={`${-5 * arrowScale},${-4 * arrowScale} 0,0 ${-5 * arrowScale},${4 * arrowScale}`}
+        transform={`translate(${targetX}, ${targetY}) rotate(${isRightTarget ? 0 : 90})`}
+        fill={color}
+      />
+    </>
   );
 }
 
