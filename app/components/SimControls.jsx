@@ -44,7 +44,7 @@ export default function SimControls({
   inputValue     = '',
   onInputChange,
   onInputConfirm,
-  flags          = { GT: false, LT: true, EQ: false },
+  flags          = { GT: false, LT: false, EQ: false },
   onRun,
   onStep,
   notation       = '',
@@ -55,8 +55,7 @@ export default function SimControls({
 
   const controlled    = onInputChange !== undefined;
   const displayInput  = controlled ? inputValue : localInput;
-//   const displayNote   = notation || localNotation;
-  const displayNote = "R0 <- R0 + R1"
+  const displayNote   = notation || localNotation;
 
   const handleInputChange = (e) => {
     const val = e.target.value.replace(/[^0-9]/g, '');
