@@ -193,8 +193,8 @@ function blocksToGraph(blocks) {
   // Build label→blockId map for resolving jump targets
   const labelMap = {};
   for (const block of blocks) {
-    if (block.entryLabel) {
-      labelMap[block.entryLabel] = block.id;
+    if (block.entryLabelKey) {
+      labelMap[block.entryLabelKey] = block.id;
     }
   }
 
