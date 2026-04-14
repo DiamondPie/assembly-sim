@@ -307,6 +307,14 @@ function blocksToGraph(blocks) {
   return { nodes, edges };
 }
 
+function getHandlePositions(n) {
+  if (n <= 0) return [];
+  const spacing = 18;
+  const total = (n - 1) * spacing;
+  return Array.from({ length: n },
+    (_, i) => `calc(50% + ${i * spacing - total / 2}px)`);
+}
+
 // ─────────────────────────────────────────────
 // Custom Node
 // ─────────────────────────────────────────────
@@ -318,17 +326,10 @@ function AsmBlockNode({ data }) {
   const srcCount = data.sourceHandles ?? 0;
   const tgtCount = data.targetHandles ?? 0;
 
-  const positions = (n) => {
-    if (n <= 0) return [];
-    const spacing = 18;
-    const total = (n - 1) * spacing;
-    return Array.from({ length: n }, (_, i) => `calc(50% + ${i * spacing - total / 2}px)`);
-  };
-
   return (
     <div className={clsx(styles.node, isEntry && styles.nodeEntry, isHalt && styles.nodeHalt)}>
       {/* Target handles (top) */}
-      {!isEntry && positions(tgtCount).map((left, i) => (
+      {!isEntry && getHandlePositions(tgtCount).map((left, i) => (
         <Handle
           key={`tgt-${i + 1}`}
           id={`tgt-${i + 1}`}
@@ -366,7 +367,7 @@ function AsmBlockNode({ data }) {
       </div>
 
       {/* Source handles (bottom) */}
-      {!isHalt && positions(srcCount).map((left, i) => (
+      {!isHalt && getHandlePositions(srcCount).map((left, i) => (
         <Handle
           key={`src-${i + 1}`}
           id={`src-${i + 1}`}
