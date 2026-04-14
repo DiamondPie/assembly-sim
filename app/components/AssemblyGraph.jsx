@@ -434,6 +434,9 @@ function AsmBlockNode({ data }) {
 // Main component
 // ─────────────────────────────────────────────
 
+const NODE_TYPES = { asmBlock: AsmBlockNode };
+const EDGE_TYPES = { jumpEdge: JumpEdge };
+
 // rows prop: same shape as AsmEditor rows
 // [{ id, label, opcode, operand }]
 export default function AssemblyGraph({ rows = [], currentRowId = null, vmFlags = null }) {
@@ -449,9 +452,6 @@ export default function AssemblyGraph({ rows = [], currentRowId = null, vmFlags 
   }, [computedNodes, setNodes]);
 
   const isEmpty = rows.filter(r => r.opcode.trim()).length === 0;
-
-  const nodeTypes = useMemo(() => ({ asmBlock: AsmBlockNode }), []);
-  const edgeTypes = useMemo(() => ({ jumpEdge: JumpEdge }), []);
 
   return (
     <div className={styles.root}>
@@ -471,7 +471,7 @@ export default function AssemblyGraph({ rows = [], currentRowId = null, vmFlags 
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
-            nodeTypes={nodeTypes}
+            nodeTypes={NODE_TYPES}
             fitView
             fitViewOptions={{ padding: 0.25, includeHiddenNodes: true }}
             minZoom={0.2} 
@@ -480,7 +480,7 @@ export default function AssemblyGraph({ rows = [], currentRowId = null, vmFlags 
             nodesConnectable={false}
             elementsSelectable
             proOptions={{ hideAttribution: true }}
-            edgeTypes={edgeTypes}
+            edgeTypes={EDGE_TYPES}
           >
             <Background
               variant={BackgroundVariant.Dots}
