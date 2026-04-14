@@ -10,11 +10,11 @@ export default function Page() {
   const [rows, setRows] = useState([]);
 
   return (
-    <main className="min-h-screen p-6 md:p-10">
+    <main className="min-h-screen p-6 md:p-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[95%] mx-auto">
 
         {/* Left column — Assembly Editor, full height */}
-        <div className="flex flex-col h-150 lg:h-[calc(100vh-80px)]">
+        <div className="flex flex-col h-150 lg:h-full">
           <AsmEditor rows={rows} onRowsChange={setRows} />
         </div>
 
