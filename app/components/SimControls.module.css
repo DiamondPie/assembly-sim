@@ -78,6 +78,9 @@
 .topRow .section {
   flex: 1;
 }
+.topRow .section:first-child {
+  min-width: 0;
+}
 
 /* ── Number input ─────────────────────────────────────────────────────────── */
 .inputRow {
@@ -88,7 +91,8 @@
 
 .numInput {
   flex: 1;
-  min-width: 0;
+  flex-shrink: 1;
+  min-width: 60px;
   background: var(--content-2, #ffffff1f);
   border: 1px solid var(--border-color-1, #ffffff14);
   border-radius: 0.4rem;
@@ -114,7 +118,8 @@
 
 .confirmBtn {
   aspect-ratio: 1 / 1;
-  width: auto; height: auto;
+  min-width: 33px; 
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
