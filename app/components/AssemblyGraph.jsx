@@ -411,11 +411,12 @@ export default function AssemblyGraph({ rows = [] }) {
       </div>
 
       <div className={styles.canvas}>
-        {isEmpty ? (
+        {isEmpty && (
           <div className={styles.empty}>
             <span className={styles.emptyText}>write instructions in the editor to see the graph</span>
           </div>
-        ) : (
+        )}
+        <div style={{ width: '100%', height: '100%', display: isEmpty ? 'none' : 'block' }}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -445,7 +446,7 @@ export default function AssemblyGraph({ rows = [] }) {
               <span className={styles.hint}>drag to pan · scroll to zoom</span>
             </Panel>
           </ReactFlow>
-        )}
+        </div>
       </div>
     </div>
   );
