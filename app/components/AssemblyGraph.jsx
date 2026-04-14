@@ -77,10 +77,6 @@ function JumpEdge({ sourceX, sourceY, targetX, targetY, data, style, label, labe
   );
 }
 
-const EDGE_TYPES = { 
-  jumpEdge: JumpEdge 
-};
-
 // ─────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────
@@ -405,6 +401,8 @@ export default function AssemblyGraph({ rows = [] }) {
 
   const isEmpty = rows.filter(r => r.opcode.trim()).length === 0;
 
+  const edgeTypes = useMemo(() => ({ jumpEdge: JumpEdge }), []);
+
   return (
     <div className={styles.root}>
       <div className={styles.toolbar}>
@@ -431,7 +429,7 @@ export default function AssemblyGraph({ rows = [] }) {
             nodesConnectable={false}
             elementsSelectable
             proOptions={{ hideAttribution: true }}
-            edgeTypes={EDGE_TYPES}
+            edgeTypes={edgeTypes}
           >
             <Background
               variant={BackgroundVariant.Dots}
