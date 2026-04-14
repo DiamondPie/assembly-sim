@@ -175,8 +175,8 @@
 }
 
 .flagActive {
-  color: var(--accent-secondary, #00b8d4);
-  background: color-mix(in oklab, var(--accent-secondary, #00b8d4), transparent 88%);
+  color: var(--accent-primary, #00b8d4);
+  background: color-mix(in oklab, var(--accent-primary, #00b8d4), transparent 88%);
   font-weight: 600;
 }
 
@@ -275,4 +275,8 @@
 .topRow ~ .hDivider + .section,
 .section + .hDivider + .section {
   padding: 0.9rem 1rem;
+}
+
+.topRow .vDivider + .section {
+  flex-shrink: 0;
 }
