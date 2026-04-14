@@ -120,7 +120,15 @@ const NODE_PADDING_Y = 32; // top + bottom header/footer area
  */
 function parseBlocks(rows) {
   // Filter out fully empty rows
-  const instructions = rows.filter(r => r.opcode.trim() || r.label.trim() || r.operand.trim());
+  const normalized = rows.map(r => ({
+    ...r,
+    label:   r.label.trim(),
+    opcode:  r.opcode.trim().toUpperCase(),
+    operand: r.operand.trim(),
+  }));
+
+  const instructions = normalized.filter(r => r.opcode || r.label || r.operand);
+
   if (instructions.length === 0) return [];
 
   const blocks = [];
@@ -134,10 +142,10 @@ function parseBlocks(rows) {
 
   for (let i = 0; i < instructions.length; i++) {
     const row = instructions[i];
-    const op  = row.opcode.trim().toUpperCase();
+    const op  = row.opcode.toUpperCase();
     const isJump = JUMP_OPCODES.has(op);
     const isHalt = HALT_OPCODES.has(op);
-    const hasLabel = row.label.trim() !== '';
+    const hasLabel = row.label !== '';
 
     // Start a new block if: this row has a label AND current block isn't empty
     if (hasLabel && current && current.instructions.length > 0) {
@@ -149,7 +157,7 @@ function parseBlocks(rows) {
     if (!current) {
       current = {
         id: `block-${blocks.length}`,
-        entryLabel: row.label.trim() || null,
+        entryLabel: row.label || null,
         instructions: [],
         isEntry: blocks.length === 0,
         isHalt: false,
@@ -161,7 +169,7 @@ function parseBlocks(rows) {
     current.instructions.push(row);
 
     if (isJump) {
-      current.jumpTarget = row.operand.trim();
+      current.jumpTarget = row.operand;
       current.jumpOp     = op;
       flushBlock();
       current = null;
