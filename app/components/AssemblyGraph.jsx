@@ -13,12 +13,13 @@ import {
   Panel,
   BaseEdge,
   useNodes,
+  MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import styles from './AssemblyGraph.module.css';
 import clsx from 'clsx';
 
-function JumpEdge({ sourceX, sourceY, targetX, targetY, data, style, label, labelStyle, labelBgStyle }) {
+function JumpEdge({ sourceX, sourceY, targetX, targetY, data, style, label, labelStyle, labelBgStyle, markerEnd }) {
   const nodes = useNodes();
   const r = 10;
   const padding = 40; 
@@ -99,6 +100,20 @@ const NODE_GAP_Y  = 60;
 // Estimated row height in px (used for rough layout before measurement)
 const ROW_H       = 22;
 const NODE_PADDING_Y = 32; // top + bottom header/footer area
+
+function isJumpTaken(jumpOp, flags) {
+  if (!flags) return false;
+  switch (jumpOp) {
+    case 'JUMPGT': case 'JGT': case 'BGT': return !!flags.GT;
+    case 'JUMPLT': case 'JLT': case 'BLT': return !!flags.LT;
+    case 'JUMPEQ': case 'JEQ': case 'BEQ': case 'BZ': return !!flags.EQ;
+    case 'JUMPNE': case 'JNE': case 'BNE': case 'BNZ': return !flags.EQ;
+    case 'JUMPGE': case 'JGE': case 'BGE': return !!(flags.GT || flags.EQ);
+    case 'JUMPLE': case 'JLE': case 'BLE': return !!(flags.LT || flags.EQ);
+    case 'JUMP': case 'JMP': case 'B': case 'BR': case 'CALL': return true;
+    default: return false;
+  }
+}
 
 // ─────────────────────────────────────────────
 // Parser: rows → blocks → RF nodes + edges
@@ -187,7 +202,7 @@ function parseBlocks(rows) {
  * Convert blocks into React Flow nodes and edges.
  * Layout: vertical stack, left-aligned.
  */
-function blocksToGraph(blocks, currentRowId) {
+function blocksToGraph(blocks, currentRowId, vmFlags) {
   if (blocks.length === 0) return { nodes: [], edges: [] };
 
   // Build label→blockId map for resolving jump targets
@@ -205,6 +220,8 @@ function blocksToGraph(blocks, currentRowId) {
   const edges = [];
 
   let jumpEdgeCount = 0;
+  const NORMAL_COLOR = 'var(--text-tertiary, #484f58)';
+  const ACTIVE_COLOR = 'var(--accent-primary, #e9a0ff)';
 
   const addEdge = (source, target, label, type = 'sequential', targetIsRight = false) => {
     if (!target) return;
@@ -220,16 +237,12 @@ function blocksToGraph(blocks, currentRowId) {
       targetHandle: `tgt-${tgtIdx}`,
       label: label || undefined,
       type: type === 'jump' ? 'jumpEdge' : 'smoothstep',
-      animated: type === 'jump',
-      data: { edgeType: type, laneIndex, targetIsRight },
-      style: {
-        stroke: type === 'jump'
-          ? 'var(--accent-primary, #e9a0ff)'
-          : 'var(--text-tertiary, #484f58)',
-        strokeWidth: type === 'jump' ? 2 : 1.5,
-      },
+      animated: false,
+      markerEnd: { type: MarkerType.ArrowClosed, width: 12, height: 12, color: NORMAL_COLOR },
+      data: { edgeType: type, laneIndex, targetIsRight, sourceBlockId: source },
+      style: { stroke: NORMAL_COLOR, strokeWidth: 1.5 },
       labelStyle: {
-        fill: 'var(--accent-primary, #e9a0ff)',
+        fill: NORMAL_COLOR,
         fontSize: 10,
         fontFamily: "'Google Sans Code', monospace",
       },
@@ -300,6 +313,27 @@ function blocksToGraph(blocks, currentRowId) {
     node.data.sourceHandles = sourceCount[node.id] ?? 1;
     node.data.targetHandles = targetCount[node.id] ?? 1;
     node.data.hasIncomingJump = jumpTargetIds.has(node.id);
+  }
+
+  // ── 激活当前执行到的跳转线 ──────────────────────────
+  for (const block of blocks) {
+    const lastInstr = block.instructions[block.instructions.length - 1];
+    if (lastInstr?.id !== currentRowId || !block.jumpTarget) continue;
+
+    const jumpTaken = isJumpTaken(block.jumpOp, vmFlags);
+
+    for (const edge of edges) {
+      if (edge.data?.sourceBlockId !== block.id) continue;
+      const isJumpEdge = edge.data?.edgeType === 'jump';
+      const shouldActivate = jumpTaken ? isJumpEdge : !isJumpEdge;
+      if (shouldActivate) {
+        edge.style = { stroke: ACTIVE_COLOR, strokeWidth: 2.5, strokeDasharray: '6 3' };
+        edge.markerEnd = { type: MarkerType.ArrowClosed, width: 12, height: 12, color: ACTIVE_COLOR };
+        edge.labelStyle = { ...edge.labelStyle, fill: ACTIVE_COLOR };
+        edge.animated = true;
+      }
+    }
+    break;
   }
 
   return { nodes, edges };
@@ -392,11 +426,11 @@ function AsmBlockNode({ data }) {
 
 // rows prop: same shape as AsmEditor rows
 // [{ id, label, opcode, operand }]
-export default function AssemblyGraph({ rows = [], currentRowId = null }) {
+export default function AssemblyGraph({ rows = [], currentRowId = null, vmFlags = null }) {
   const { nodes: computedNodes, edges } = useMemo(() => {
     const blocks = parseBlocks(rows);
-    return blocksToGraph(blocks, currentRowId);
-  }, [rows, currentRowId]);
+    return blocksToGraph(blocks, currentRowId, vmFlags);
+  }, [rows, currentRowId, vmFlags]);
   
   const [nodes, setNodes, onNodesChange] = useNodesState(computedNodes);
   

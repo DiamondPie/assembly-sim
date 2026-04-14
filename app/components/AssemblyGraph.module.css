@@ -172,6 +172,11 @@
   padding-bottom: 0.35rem;
 }
 
+.instrActive {
+  background-color: rgba(233, 160, 255, 0.18);
+  border-radius: 3px;
+}
+
 .instrRow:hover {
   background: rgba(255,255,255,0.04);
 }

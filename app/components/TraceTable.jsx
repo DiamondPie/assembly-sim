@@ -91,7 +91,6 @@ export default function TraceTable({
                         changed          && styles.cellChanged,
                         col.key === 'pc' && styles.cellPc,
                       )}
-                      style={{ animationDelay: `${rowIdx * 40}ms` }}
                     >
                       <span className={styles.cellText}>
                         {row[col.key] ?? '—'}

@@ -162,7 +162,7 @@ function cloneState(state) {
     memory: new Map(state.memory),
     flags:  { ...state.flags },
     output: [...state.output],
-    trace:  [...state.trace],
+    trace:  state.trace,
   };
 }
 

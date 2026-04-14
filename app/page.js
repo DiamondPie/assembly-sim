@@ -165,7 +165,7 @@ export default function Page() {
         </div>
 
         {/* Bottom — CFG Graph */}
-        <AssemblyGraph rows={rows} currentRowId={currentRowId}/>
+        <AssemblyGraph rows={rows} currentRowId={currentRowId} vmFlags={vmState?.flags ?? null}/>
       </div>
     </main>
   );
