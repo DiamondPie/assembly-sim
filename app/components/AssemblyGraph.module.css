@@ -79,6 +79,12 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-tertiary, #484f58);
+
+  display: block;
+  max-width: 90%;
+  margin: 0 auto;
+  text-align: center;
+  line-height: 1.5;
 }
 
 /* ── Controls override ────────────────────────── */
@@ -151,10 +157,6 @@
 }
 
 /* ── Node body: instruction list ──────────────── */
-.nodeBody {
-  padding: 0.35rem 0;
-}
-
 .instrRow {
   display: flex;
   gap: 0.5rem;
@@ -162,6 +164,12 @@
   font-size: 0.75rem;
   line-height: 1.5;
   transition: background 0.1s;
+}
+.instrRow:first-child {
+  padding-top: 0.35rem;
+}
+.instrRow:last-child {
+  padding-bottom: 0.35rem;
 }
 
 .instrRow:hover {
