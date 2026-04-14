@@ -80,11 +80,6 @@ export default function SimControls({
   return (
     <div className={styles.root}>
 
-      {/* ── Header ── */}
-      <div className={styles.toolbar}>
-        <span className={styles.title}>Simulator</span>
-      </div>
-
       {/* ── Body ── */}
       <div className={styles.body}>
 
@@ -147,7 +142,6 @@ export default function SimControls({
 
         {/* ── Row 2: Run controls ── */}
         <div className={styles.section}>
-          <span className={styles.sectionLabel}>Execute</span>
           <div className={styles.btnRow}>
             <button
               className={clsx(styles.execBtn, styles.execBtnRun)}
