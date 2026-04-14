@@ -1,0 +1,287 @@
+/* ── Root ─────────────────────────────────────────────────────────────────── */
+.root {
+  font-family: 'Google Sans Code', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  color: var(--text-primary, #fff);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Toolbar ──────────────────────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary, #484f58);
+}
+
+/* ── Body card ────────────────────────────────────────────────────────────── */
+.body {
+  border: 1px solid var(--border-color-1, #ffffff14);
+  border-radius: 0.6rem;
+  background: var(--content-1, #ffffff0d);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Subtle top-edge glow matching accent-tertiary (purple) */
+.body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.6rem;
+  background: linear-gradient(180deg, #a78bfa08 0%, transparent 35%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Section wrapper ──────────────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.sectionLabel {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary, #484f58);
+}
+
+/* ── Dividers ─────────────────────────────────────────────────────────────── */
+.hDivider {
+  height: 1px;
+  background: var(--border-color-1, #ffffff14);
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.vDivider {
+  width: 1px;
+  background: var(--border-color-1, #ffffff14);
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+/* ── Top row: Input + Flags side by side ──────────────────────────────────── */
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 0.9rem 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.topRow .section {
+  flex: 1;
+}
+
+/* ── Number input ─────────────────────────────────────────────────────────── */
+.inputRow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.numInput {
+  flex: 1;
+  min-width: 0;
+  background: var(--content-2, #ffffff1f);
+  border: 1px solid var(--border-color-1, #ffffff14);
+  border-radius: 0.4rem;
+  color: var(--text-primary, #fff);
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+  caret-color: var(--accent-tertiary, #a78bfa);
+  /* Only numeric characters */
+  ime-mode: disabled;
+}
+
+.numInput::placeholder {
+  color: var(--text-tertiary, #484f58);
+}
+
+.numInput:focus {
+  border-color: var(--accent-tertiary, #a78bfa);
+  background: color-mix(in oklab, var(--accent-tertiary, #a78bfa), transparent 92%);
+}
+
+.confirmBtn {
+  aspect-ratio: 1 / 1;
+  width: auto; height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.4rem;
+  border: 1px solid var(--border-color-1, #ffffff14);
+  background: var(--content-1, #ffffff0d);
+  color: var(--text-secondary, #8b949e);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.confirmBtn:hover {
+  border-color: color-mix(in oklab, var(--accent-tertiary, #a78bfa), transparent 50%);
+  color: var(--accent-tertiary, #a78bfa);
+  background: color-mix(in oklab, var(--accent-tertiary, #a78bfa), transparent 88%);
+}
+
+/* ── Flag table ───────────────────────────────────────────────────────────── */
+.flagTable {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto auto;
+  border: 1px solid var(--border-color-1, #ffffff14);
+  border-radius: 0.4rem;
+  overflow: hidden;
+}
+
+.flagHeader {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary, #484f58);
+  text-align: center;
+  padding: 0.25rem 0.35rem;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--border-color-1, #ffffff14);
+}
+
+/* right-border between header cells except last */
+.flagHeader:not(:last-of-type),
+.flagValue:not(:last-of-type) {
+  border-right: 1px solid var(--border-color-1, #ffffff14);
+}
+
+.flagValue {
+  font-size: 0.78rem;
+  text-align: center;
+  padding: 0.3rem 0.35rem;
+  color: var(--text-tertiary, #484f58);
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.flagActive {
+  color: var(--accent-secondary, #00b8d4);
+  background: color-mix(in oklab, var(--accent-secondary, #00b8d4), transparent 88%);
+  font-weight: 600;
+}
+
+/* ── Execute buttons ──────────────────────────────────────────────────────── */
+.section:has(.btnRow) {
+  padding: 0.9rem 1rem;
+}
+
+.btnRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.execBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color-1, #ffffff14);
+  background: var(--content-1, #ffffff0d);
+  color: var(--text-secondary, #8b949e);
+  font-family: inherit;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  justify-content: center;
+}
+
+/* Run — accent-primary (purple-pink) */
+.execBtnRun {
+  border-color: color-mix(in oklab, var(--accent-primary, #e9a0ff), transparent 60%);
+  color: var(--accent-primary, #e9a0ff);
+  background: color-mix(in oklab, var(--accent-primary, #e9a0ff), transparent 90%);
+}
+
+.execBtnRun:hover {
+  background: color-mix(in oklab, var(--accent-primary, #e9a0ff), transparent 80%);
+  box-shadow: 0 0 16px color-mix(in oklab, var(--accent-primary, #e9a0ff), transparent 70%);
+}
+
+/* Step — accent-tertiary (violet) */
+.execBtnStep {
+  border-color: color-mix(in oklab, var(--accent-tertiary, #a78bfa), transparent 60%);
+  color: var(--accent-tertiary, #a78bfa);
+  background: color-mix(in oklab, var(--accent-tertiary, #a78bfa), transparent 90%);
+}
+
+.execBtnStep:hover {
+  background: color-mix(in oklab, var(--accent-tertiary, #a78bfa), transparent 80%);
+  box-shadow: 0 0 16px color-mix(in oklab, var(--accent-tertiary, #a78bfa), transparent 70%);
+}
+
+.execBtn:active {
+  transform: scale(0.97);
+}
+
+/* ── Notation display ─────────────────────────────────────────────────────── */
+.section:has(.notationBox) {
+  padding: 0.9rem 1rem;
+}
+
+.notationBox {
+  min-height: 2.6rem;
+  border: 1px solid var(--border-color-1, #ffffff14);
+  border-radius: 0.4rem;
+  background: rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  transition: border-color 0.3s ease;
+}
+
+.notationBox:not(.notationEmpty) {
+  border-color: color-mix(in oklab, var(--accent-secondary, #00b8d4), transparent 60%);
+  background: color-mix(in oklab, var(--accent-secondary, #00b8d4), transparent 92%);
+}
+
+.notationText {
+  font-size: 0.88rem;
+  color: var(--text-primary, #fff);
+  letter-spacing: 0.04em;
+  white-space: pre;
+}
+
+.notationPlaceholder {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary, #484f58);
+  font-style: italic;
+}
+
+/* ── Padding helpers for sections without special wrappers ────────────────── */
+.topRow ~ .hDivider + .section,
+.section + .hDivider + .section {
+  padding: 0.9rem 1rem;
+}

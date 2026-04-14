@@ -3,6 +3,7 @@
 import AsmEditor from './components/AsmEditor';
 import TraceTable from './components/TraceTable';
 import AssemblyGraph from './components/AssemblyGraph';
+import SimControls from './components/SimControls';
 import { useState } from 'react';
 
 export default function Page() {
@@ -26,10 +27,8 @@ export default function Page() {
           </div>
 
           {/* Bottom-right: reserved for future component */}
-          <div className="flex-1 min-h-48 rounded-xl border border-(--border-color-1) bg-(--content-1) flex items-center justify-center">
-            <span className="text-[0.65rem] tracking-widest uppercase text-(--text-tertiary)">
-              coming soon
-            </span>
+          <div className="flex flex-col h-full">
+            <SimControls />
           </div>
 
         </div>
