@@ -5,13 +5,19 @@ import styles from './AsmEditor.module.css';
 import clsx from 'clsx';
 
 const EXAMPLE_ROWS = [
-  { label: '.START', opcode: 'LOAD',  operand: 'R0, #0' },
-  { label: '',       opcode: 'LOAD',  operand: 'R1, #10' },
-  { label: '.LOOP',  opcode: 'ADD',   operand: 'R0, R0, #1' },
-  { label: '',       opcode: 'CMP',   operand: 'R0, R1' },
-  { label: '',       opcode: 'BNE',   operand: '.LOOP' },
-  { label: '.END',   opcode: 'STORE', operand: 'R0, MEM[0]' },
-  { label: '',       opcode: 'HALT',  operand: '' },
+  { label: '',        opcode: 'IN',        operand: 'N' },
+  { label: 'START:',  opcode: 'LOAD',      operand: 'TERM' },
+  { label: '',        opcode: 'COMPARE',   operand: 'N' },
+  { label: '',        opcode: 'JUMPLT',    operand: 'FINISH' },
+  { label: '',        opcode: 'ADD',       operand: 'SUM' },
+  { label: '',        opcode: 'STORE',     operand: 'SUM' },
+  { label: '',        opcode: 'INCREMENT', operand: 'TERM' },
+  { label: '',        opcode: 'JUMP',      operand: 'START' },
+  { label: 'FINISH:', opcode: 'OUT',       operand: 'SUM' },
+  { label: '',        opcode: 'HALT',      operand: '' },
+  { label: 'N:',      opcode: '.DATA',     operand: '0' },
+  { label: 'TERM:',   opcode: '.DATA',     operand: '1' },
+  { label: 'SUM:',    opcode: '.DATA',     operand: '0' },
 ];
 
 let _id = 0;
@@ -190,7 +196,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
                   ref={el => setRef(row.id, 'label', el)}
                   className={clsx(styles.asmInput, styles.asmInputLabel)}
                   type="text"
-                  placeholder=".LABEL"
+                  placeholder="LABEL:"
                   value={row.label}
                   spellCheck={false}
                   onFocus={() => setFocusedId(row.id)}
