@@ -187,7 +187,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
             >
               {/* Addr */}
               <div className={clsx(styles.asmCell, styles.asmCellAddr)}>
-                {index.toString(16).toUpperCase().padStart(2, '0')} {/* 16进制显示更具汇编感，00, 01... */}
+                {index.toString().toUpperCase().padStart(2, '0')} {/* 16进制显示更具汇编感，00, 01... */}
               </div>
 
               {/* Label */}
