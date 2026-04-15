@@ -5,6 +5,7 @@ import AsmEditor from './components/AsmEditor';
 import TraceTable from './components/TraceTable';
 import AssemblyGraph from './components/AssemblyGraph';
 import SimControls from './components/SimControls';
+import { checkSyntax } from './AsmVM';
 
 import {
   parse,
@@ -63,6 +64,16 @@ export default function Page() {
     setAutoRun(false);
   }
 
+  const guardSyntax = useCallback(() => {
+    const w = checkSyntax(rows);
+    const count = Object.keys(w).length;
+    if (count > 0) {
+      toast.error(`Cannot run: ${count} line(s) have syntax issues. Hover the highlighted cells for details.`);
+      return false;
+    }
+    return true;
+  }, [rows]);
+
   // 懒初始化：第一次点 Run/Step 时才真正 createVM
   const ensureVM = useCallback(
     () => vmState ?? createVM(program),
@@ -70,6 +81,7 @@ export default function Page() {
   );
 
   const handleStep = useCallback(() => {
+    if (!guardSyntax()) return;
     const cur = ensureVM();
     if (cur.halted || cur.error || cur.waitingForInput) {
       setVmState(cur); // 把潜在的初始化写回
@@ -77,9 +89,10 @@ export default function Page() {
     }
     setAutoRun(false);
     setVmState(step(cur, program));
-  }, [ensureVM, program]);
+  }, [ensureVM, program, guardSyntax]);
 
   const handleRun = useCallback(() => {
+    if (!guardSyntax()) return;
     const cur = ensureVM();
     if (cur.halted || cur.error) {
       setVmState(cur);
@@ -88,7 +101,7 @@ export default function Page() {
     setAutoRun(true);
     // run() 会在遇到 IN / HALT / error 时自动停
     setVmState(run(cur, program));
-  }, [ensureVM, program]);
+  }, [ensureVM, program, guardSyntax]);
 
   const handleInputConfirm = useCallback(
     (val) => {

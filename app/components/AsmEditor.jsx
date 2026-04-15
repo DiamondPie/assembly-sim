@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './AsmEditor.module.css';
+import { checkSyntax } from '@/app/AsmVM';   // 路径按你的项目调整
 import clsx from 'clsx';
 
 const EXAMPLE_ROWS = [
@@ -38,6 +40,25 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
   const [focusedId, setFocusedId] = useState(null);
   const [copied, setCopied] = useState(false);
   const inputRefs = useRef({});
+
+  const [warnings, setWarnings] = useState({});
+  const [tooltip, setTooltip]   = useState(null); // { x, y, message } | null
+
+  // 500ms debounce
+  useEffect(() => {
+    const t = setTimeout(() => setWarnings(checkSyntax(rows)), 500);
+    return () => clearTimeout(t);
+  }, [rows]);
+
+  const showTooltip = (e, message) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({
+      x: rect.left + rect.width / 2,
+      y: rect.bottom + 10,
+      message,
+    });
+  };
+  const hideTooltip = () => setTooltip(null);
 
   const setRows = (updater) => {
     if (isControlled) {
@@ -214,7 +235,13 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
               </div>
 
               {/* Label */}
-              <div className={clsx(styles.asmCell, styles.asmCellLabel)}>
+              <div 
+                className={clsx(styles.asmCell, styles.asmCellLabel, warnings[row.id]?.label && styles.asmCellWarn)}
+                data-asm-cell data-row-id={row.id} data-col="label"
+                onMouseEnter={warnings[row.id]?.label
+                  ? (e) => showTooltip(e, warnings[row.id].label) : undefined}
+                onMouseLeave={warnings[row.id]?.label ? hideTooltip : undefined}
+              >
                 <input
                   ref={el => setRef(row.id, 'label', el)}
                   className={clsx(styles.asmInput, styles.asmInputLabel)}
@@ -230,7 +257,13 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
               </div>
 
               {/* Opcode */}
-              <div className={styles.asmCell}>
+              <div 
+                className={clsx(styles.asmCell, warnings[row.id]?.opcode && styles.asmCellWarn)}
+                data-asm-cell data-row-id={row.id} data-col="opcode"
+                onMouseEnter={warnings[row.id]?.opcode
+                  ? (e) => showTooltip(e, warnings[row.id].opcode) : undefined}
+                onMouseLeave={warnings[row.id]?.opcode ? hideTooltip : undefined}
+              >
                 <input
                   ref={el => setRef(row.id, 'opcode', el)}
                   className={clsx(styles.asmInput, styles.asmInputOpcode)}
@@ -246,7 +279,13 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
               </div>
 
               {/* Operand */}
-              <div className={styles.asmCell}>
+              <div 
+                className={clsx(styles.asmCell, warnings[row.id]?.operand && styles.asmCellWarn)}
+                data-asm-cell data-row-id={row.id} data-col="operand"
+                onMouseEnter={warnings[row.id]?.operand
+                  ? (e) => showTooltip(e, warnings[row.id].operand) : undefined}
+                onMouseLeave={warnings[row.id]?.operand ? hideTooltip : undefined}
+              >
                 <input
                   ref={el => setRef(row.id, 'operand', el)}
                   className={clsx(styles.asmInput, styles.asmInputOperand)}
@@ -290,6 +329,14 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
         <span className={styles.asmStat}>instructions <span className={styles.asmStatVal}>{stats.instructions}</span></span>
         <span className={styles.asmStat}>labels <span className={styles.asmStatVal}>{stats.labels}</span></span>
       </div>
+
+      {tooltip && typeof document !== 'undefined' && createPortal(
+        <div className={styles.warningTooltip}
+            style={{ left: tooltip.x, top: tooltip.y }}>
+          {tooltip.message}
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

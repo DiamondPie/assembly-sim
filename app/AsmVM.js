@@ -68,6 +68,71 @@
 //   trace:           TraceRow[],
 // }
 
+const NO_OPERAND_OPS = new Set(['HALT']);
+const JUMP_OPS = new Set(['JUMP','JUMPGT','JUMPEQ','JUMPLT','JUMPNEQ']);
+const DATA_REF_OPS = new Set([
+  'LOAD','STORE','CLEAR','ADD','SUBTRACT','INCREMENT','DECREMENT','COMPARE','IN','OUT'
+]);
+export const VALID_OPCODES = new Set([
+  'LOAD','STORE','CLEAR','ADD','SUBTRACT','INCREMENT','DECREMENT',
+  'COMPARE','JUMP','JUMPGT','JUMPEQ','JUMPLT','JUMPNEQ',
+  'IN','OUT','HALT','.DATA',
+]);
+
+/**
+ * 返回 { [rowId]: { label?, opcode?, operand? } }，值为该单元格的警告文字。
+ * 只对未禁用且非空的行做检查。
+ */
+export function checkSyntax(rows) {
+  const labels = new Set();
+  const dataNames = new Set();
+
+  for (const r of rows) {
+    if (r.disabled) continue;
+    const label  = r.label.trim().replace(/:$/, '');
+    const opcode = r.opcode.trim().toUpperCase();
+    if (!label) continue;
+    if (opcode === '.DATA') dataNames.add(label);
+    else                    labels.add(label);
+  }
+
+  const warnings = {};
+  for (const r of rows) {
+    if (r.disabled) continue;
+    const label   = r.label.trim();
+    const opcode  = r.opcode.trim().toUpperCase();
+    const operand = r.operand.trim();
+    if (!label && !opcode && !operand) continue;
+
+    const w = {};
+
+    // —— opcode 校验 ——
+    if (!opcode) {
+      w.opcode = 'Missing opcode. Each non-blank line must specify an instruction.';
+    } else if (!VALID_OPCODES.has(opcode)) {
+      w.opcode = `Unknown opcode "${opcode}". Allowed: LOAD, STORE, CLEAR, ADD, SUBTRACT, INCREMENT, DECREMENT, COMPARE, JUMP, JUMPGT, JUMPEQ, JUMPLT, JUMPNEQ, IN, OUT, HALT, .DATA.`;
+    }
+
+    // —— operand 校验 ——
+    if (opcode && VALID_OPCODES.has(opcode)) {
+      if (NO_OPERAND_OPS.has(opcode)) {
+        // HALT 不需要 operand
+      } else if (opcode === '.DATA') {
+        if (!label) w.label = '.DATA must have a label (the variable name).';
+      } else if (!operand) {
+        w.operand = `Opcode "${opcode}" requires an operand.`;
+      } else if (JUMP_OPS.has(opcode) && !labels.has(operand)) {
+        w.operand = `Label "${operand}" is not defined.`;
+      } else if (DATA_REF_OPS.has(opcode) && !dataNames.has(operand)) {
+        w.operand = `Variable "${operand}" is not declared. Add a ".DATA" row to declare it.`;
+      }
+    }
+
+    if (Object.keys(w).length) warnings[r.id] = w;
+  }
+  return warnings;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // parse(rows) → Program
 // ─────────────────────────────────────────────────────────────────────────────
