@@ -580,7 +580,10 @@ export function parseAsmText(text) {
   const rawLines = text.split(/\r?\n/);
   const parsed = [];
   for (const ln of rawLines) {
-    if (!ln.trim()) continue;          // 跳过完全空行（但仍记录 line 总数用于"多行"判断）
+    const trimmed = ln.trim();
+    if (!trimmed) continue;
+    if (/^\.(BEGIN|END)\s*$/i.test(trimmed)) continue; 
+    
     const p = parseAsmLine(ln);
     if (!p) return null;
     if (!VALID_OPCODES.has(p.opcode)) return null;  // 严格：未知 opcode → 整体不算汇编
