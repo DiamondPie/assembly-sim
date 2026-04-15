@@ -1,5 +1,6 @@
 import { Google_Sans_Code } from "next/font/google";
 import { Analytics } from '@vercel/analytics/next';
+import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
 const googleSansCode = Google_Sans_Code({
@@ -21,6 +22,14 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col">
         {children}
         <Analytics />
+        <Toaster position="bottom-left" toastOptions={{ 
+          duration: 3000, 
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          }, 
+        }} />
       </body>
     </html>
   );

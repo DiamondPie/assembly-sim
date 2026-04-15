@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import AsmEditor from './components/AsmEditor';
 import TraceTable from './components/TraceTable';
 import AssemblyGraph from './components/AssemblyGraph';
 import SimControls from './components/SimControls';
-import { checkSyntax } from './AsmVM';
+import { checkSyntax, parseAsmText, isEditorEmpty } from './AsmVM';
 
 import {
   parse,
@@ -134,6 +135,40 @@ export default function Page() {
     () => (vmState ? traceToTableRows(vmState.trace, program) : []),
     [vmState, program]
   );
+
+  useEffect(() => {
+    const handler = (e) => {
+      const text = e.clipboardData?.getData('text') ?? '';
+      const parsed = parseAsmText(text);
+      if (!parsed) return;                 // 不是汇编 → 让默认行为发生
+  
+      // e.target 是否落在编辑器某个单元格里
+      const cellEl = e.target?.closest?.('[data-asm-cell]');
+  
+      if (parsed.lines.length > 1) {
+        // —— 多行 —— 全局生效
+        e.preventDefault();
+        if (isEditorEmpty(rows)) {
+          setRows(parsed.lines.map(p => mk(p.label, p.opcode, p.operand)));
+          toast.success(`Pasted ${parsed.lines.length} lines into the editor.`);
+        } else {
+          toast.error('Editor is not empty. Please clear it before pasting a program.');
+        }
+      } else if (parsed.lines.length === 1 && cellEl) {
+        // —— 单行 —— 只在单元格内生效，整行覆盖当前行
+        e.preventDefault();
+        const rowId = Number(cellEl.dataset.rowId);
+        const p = parsed.lines[0];
+        setRows(prev => prev.map(r =>
+          r.id === rowId ? { ...r, label: p.label, opcode: p.opcode, operand: p.operand } : r
+        ));
+      }
+      // 单行但不在单元格内 → 不动
+    };
+  
+    document.addEventListener('paste', handler, true); // capture
+    return () => document.removeEventListener('paste', handler, true);
+  }, [rows]);
 
   // ── 派生：SimControls 的 props ───────────────────────────────────────────
   const flags    = vmState?.flags ?? { GT: false, LT: false, EQ: false };

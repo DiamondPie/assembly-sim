@@ -545,3 +545,55 @@ export function traceToTableColumns(program) {
     ...varNames.map(v => ({ key: v, label: v })),
   ];
 }
+
+/** 把一行文本解析成 { label, opcode, operand }，不能解析返回 null */
+export function parseAsmLine(line) {
+  const trimmed = line.replace(/\t/g, ' ').trim();
+  if (!trimmed) return null;
+  // 去掉行尾注释（如果你的汇编支持 ; 注释，可在这里处理；目前先不处理）
+
+  const tokens = trimmed.split(/\s+/);
+  let label = '', opcode = '', operand = '';
+  let i = 0;
+
+  // 第一个 token 含 ":" → 视为 label
+  if (tokens[0].endsWith(':')) {
+    label = tokens[0];
+    i++;
+  } else if (tokens[0].includes(':')) {
+    // 形如 "START:LOAD" 的紧贴写法
+    const idx = tokens[0].indexOf(':');
+    label = tokens[0].slice(0, idx + 1);
+    const rest = tokens[0].slice(idx + 1);
+    if (rest) tokens[0] = rest; else { tokens.shift(); }
+  }
+
+  if (i < tokens.length) opcode = tokens[i++].toUpperCase();
+  if (i < tokens.length) operand = tokens.slice(i).join(' ');
+
+  return { label, opcode, operand };
+}
+
+/** 解析整段文本；只有当至少 1 行能解析、且每个解析出的 opcode 都在白名单内才返回结果 */
+export function parseAsmText(text) {
+  if (!text || typeof text !== 'string') return null;
+  const rawLines = text.split(/\r?\n/);
+  const parsed = [];
+  for (const ln of rawLines) {
+    if (!ln.trim()) continue;          // 跳过完全空行（但仍记录 line 总数用于"多行"判断）
+    const p = parseAsmLine(ln);
+    if (!p) return null;
+    if (!VALID_OPCODES.has(p.opcode)) return null;  // 严格：未知 opcode → 整体不算汇编
+    parsed.push(p);
+  }
+  if (parsed.length === 0) return null;
+  return { lines: parsed };
+}
+
+/** 编辑器是否为空 */
+export function isEditorEmpty(rows) {
+  if (!rows || rows.length === 0) return true;
+  return rows.every(r =>
+    !(r.label?.trim()) && !(r.opcode?.trim()) && !(r.operand?.trim())
+  );
+}
