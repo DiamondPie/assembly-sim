@@ -3,36 +3,6 @@
 import styles from './TraceTable.module.css';
 import clsx from 'clsx';
 
-const EXAMPLE_ROWS = [
-  { pc: 0,  r0: 0, r1: 2  },
-  { pc: 1,  r0: 1  },
-  { pc: 2,  r0: 2  },
-  { pc: 3,  r0: 3  },
-  { pc: 4,  r0: 4  },
-  { pc: 5,  r0: 10 },
-  { pc: 6,  r0: 10 },
-  { pc: 6,  r0: 10 },
-  { pc: 6,  r0: 10 },
-  { pc: 6,  r0: 10 },
-  { pc: 6,  r0: 10 },
-  { pc: 6,  r0: 10 },
-  { pc: 6,  r0: 10 },
-  { pc: 6,  r0: 10 },
-];
-
-const DEFAULT_COLUMNS = [
-  { key: 'pc', label: 'PC' },
-  { key: 'r0', label: 'R0' },
-  { key: 'r1', label: 'R1' },
-  { key: 'r2', label: 'R2' },
-  { key: 'r3', label: 'R3' },
-  // { key: 'r4', label: 'R4' },
-  // { key: 'r5', label: 'R5' },
-  // { key: 'r6', label: 'R6' },
-  // { key: 'r7', label: 'R7' },
-  // { key: 'r8', label: 'R8' },
-];
-
 // columns:   [{ key: 'pc', label: 'PC' }, ...]
 // rows:      [{ pc: 0, r0: 0 }, ...]
 // colWidth:  fixed px width per column (default 80)
