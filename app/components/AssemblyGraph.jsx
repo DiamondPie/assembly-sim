@@ -149,8 +149,9 @@ function parseBlocks(rows) {
   }));
 
   const instructions = normalized.filter(r => 
-    (r.opcode || r.label || r.operand)
-    && r.opcode !== '.DATA');
+    !r.disabled &&
+    (r.opcode || r.label || r.operand) &&
+    r.opcode !== '.DATA');
 
   if (instructions.length === 0) return [];
 
