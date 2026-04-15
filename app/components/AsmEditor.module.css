@@ -348,3 +348,16 @@
     display: none; /* 手机端隐藏标题，给按钮留空间 */
   }
 }
+
+.asmTerminateBtn {
+  color: #ff6b7a;
+  background: rgba(255, 90, 110, 0.06);
+  border-top: 1px solid rgba(255, 90, 110, 0.25);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.asmTerminateBtn:hover {
+  background: rgba(255, 90, 110, 0.14);
+  color: #ff8593;
+}

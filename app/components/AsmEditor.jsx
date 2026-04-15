@@ -31,7 +31,7 @@ const makeRow = (label = '', opcode = '', operand = '') => ({
   disabled: false, 
 });
 
-export default function AsmEditor({ rows: externalRows, onRowsChange }) {
+export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning = false, onTerminate }) {
   // const [rows, setRows] = useState(() => EXAMPLE_ROWS.map(r => makeRow(r.label, r.opcode, r.operand)));
   const isControlled = externalRows !== undefined;
   const [internalRows, setInternalRows] = useState(() => EXAMPLE_ROWS.map(r => makeRow(r.label, r.opcode, r.operand)));
@@ -437,13 +437,28 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
           ))}
         </div>
 
-        <button className={styles.asmAddRow} onClick={() => addRow(rows[rows.length - 1]?.id)}>
-          <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <line x1="6" y1="1" x2="6" y2="11" />
-            <line x1="1" y1="6" x2="11" y2="6" />
-          </svg>
-          add row
-        </button>
+        {isRunning ? (
+          <button
+            className={clsx(styles.asmAddRow, styles.asmTerminateBtn)}
+            onClick={onTerminate}
+            title="Terminate the running program"
+          >
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor"
+                strokeWidth="1.6" strokeLinecap="round">
+              <rect x="2.5" y="2.5" width="7" height="7" rx="1" />
+            </svg>
+            terminate program
+          </button>
+        ) : (
+          <button className={styles.asmAddRow} onClick={() => addRow(rows[rows.length - 1]?.id)}>
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor"
+                strokeWidth="1.5" strokeLinecap="round">
+              <line x1="6" y1="1" x2="6" y2="11" />
+              <line x1="1" y1="6" x2="11" y2="6" />
+            </svg>
+            add row
+          </button>
+        )}
       </div>
 
       <div className={styles.asmStatus}>

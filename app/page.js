@@ -193,13 +193,24 @@ export default function Page() {
     ? vmState.trace[vmState.trace.length - 1].highlight
     : null;
 
+  const isRunning = !!vmState && !vmState.halted && !vmState.error;
+
+  const handleTerminate = useCallback(() => {
+    setVmState(null);
+    setAutoRun(false);
+    setInputValue('');
+  }, []);
   return (
     <main className="min-h-screen p-6 md:p-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[95%] mx-auto">
 
         {/* Left column — Assembly Editor, full height */}
         <div className="flex flex-col h-150 lg:h-full">
-          <AsmEditor rows={rows} onRowsChange={setRows} />
+          <AsmEditor 
+            rows={rows}
+            onRowsChange={setRows}
+            isRunning={isRunning}
+            onTerminate={handleTerminate} />
         </div>
 
         {/* Right column — Trace Table + SimControls */}
