@@ -26,6 +26,7 @@ const makeRow = (label = '', opcode = '', operand = '') => ({
   label,
   opcode,
   operand,
+  disabled: false, 
 });
 
 export default function AsmEditor({ rows: externalRows, onRowsChange }) {
@@ -144,6 +145,16 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
     labels: rows.filter(r => r.label.trim()).length,
   };
 
+  const addrTexts = (() => {
+    let c = 0;
+    return rows.map(row => {
+      if (row.disabled) return '//';
+      const t = c.toString().padStart(2, '0');
+      c++;
+      return t;
+    });
+  })();
+
   return (
     <div className={styles.asmRoot}>
       <div className={styles.asmToolbar}>
@@ -183,11 +194,23 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
           {rows.map((row, index) => (
             <div
               key={row.id}
-              className={clsx(styles.asmRow, focusedId === row.id && styles.asmRowFocused)}
+              className={clsx(
+                styles.asmRow, 
+                focusedId === row.id && styles.asmRowFocused,
+                row.disabled && styles.asmRowDisabled,
+              )}
             >
               {/* Addr */}
-              <div className={clsx(styles.asmCell, styles.asmCellAddr)}>
-                {index.toString().toUpperCase().padStart(2, '0')} {/* 16进制显示更具汇编感，00, 01... */}
+              <div
+                className={clsx(styles.asmCell, styles.asmCellAddr,
+                                row.disabled && styles.asmCellAddrDisabled)}
+                onClick={() => setRows(prev => prev.map(r =>
+                  r.id === row.id ? { ...r, disabled: !r.disabled } : r
+                ))}
+                title={row.disabled ? 'Click to enable this line' : 'Click to disable this line'}
+                style={{ cursor: 'pointer', userSelect: 'none' }}
+              >
+                {addrTexts[index]}
               </div>
 
               {/* Label */}

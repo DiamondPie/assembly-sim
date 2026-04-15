@@ -23,6 +23,7 @@ const mk = (label, opcode, operand) => ({
   label,
   opcode,
   operand,
+  disabled: false,
 });
 
 const INITIAL_ROWS = [
@@ -49,7 +50,10 @@ export default function Page() {
   const [autoRun, setAutoRun] = useState(false);
 
   // 每次 rows 变化都重新解析
-  const program = useMemo(() => parse(rows), [rows]);
+  const program = useMemo(
+    () => parse(rows.filter(r => !r.disabled)),
+    [rows]
+  );
 
   // rows/program 变化 → 重置 VM（避免旧状态与新代码错位）
   if (program !== prevProgram) {

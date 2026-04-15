@@ -260,6 +260,21 @@
 
 .asmStatVal { color: var(--text-secondary, #8b949e); }
 
+.asmRowDisabled .asmInput,
+.asmRowDisabled .asmCellAddr {
+  color: rgba(156,163,175,0.4);       /* 灰 */
+  font-style: italic;
+}
+.asmRowDisabled .asmInput {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: #484a50;
+}
+.asmCellAddrDisabled {
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+
 @keyframes asmRowAppear {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
