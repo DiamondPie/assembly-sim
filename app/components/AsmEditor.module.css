@@ -100,7 +100,7 @@
 .asmHeader {
   display: grid;
   /* grid-template-columns: 168px 140px 1fr 32px; */
-  grid-template-columns: 50px 1fr 1fr 2fr 32px;
+  grid-template-columns: 50px 1.5fr 1.5fr 2fr 32px;
   padding: 0.45rem 0;
   border-bottom: 1px solid var(--border-color-1, #ffffff14);
   background: rgba(255,255,255,0.03);
@@ -133,7 +133,7 @@
 .asmRow {
   display: grid;
   /* grid-template-columns: 180px 140px 1fr 32px; */
-  grid-template-columns: 50px 1fr 1fr 2fr 32px;
+  grid-template-columns: 50px 1.5fr 1.5fr 2fr 32px;
   width: 100%;
   align-items: stretch;
   border-bottom: 1px solid var(--border-color-1, #ffffff14);
@@ -270,7 +270,7 @@
 /* 适配移动端：如果宽度小于 600px，可以调整列比例 */
 @media (max-width: 600px) {
   .asmHeader, .asmRow {
-    grid-template-columns: 50px 1fr 1fr 1.5fr 32px; /* 缩小 Label 的占比 */
+    grid-template-columns: 50px 1fr 1fr 1.75fr 32px; /* 缩小 Label 的占比 */
     gap: 4px;
   }
   
