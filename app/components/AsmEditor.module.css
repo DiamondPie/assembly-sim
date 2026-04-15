@@ -7,7 +7,15 @@
   display: flex;
   flex-direction: column;
   height: 100%;    /* 占满父级给出的高度 */
+  min-height: 0;
   overflow: hidden; /* 防止根容器溢出 */
+}
+
+.asmToolbar,
+.asmHeader,
+.asmAddRow,
+.asmStatus {
+  flex: 0 0 auto;
 }
 
 .asmToolbar {
@@ -79,12 +87,14 @@
   
   width: 100%;
   min-width: 0;
+  min-height: 0;
   overflow-x: auto;
 
   height: 100%;
   min-height: 0;
   display: flex; 
   flex-direction: column;
+  flex: 1 1 0;
 }
 
 .asmTableContainer::before {
@@ -95,6 +105,9 @@
   background: linear-gradient(180deg, #e9a0ff06 0%, transparent 40%);
   pointer-events: none;
   z-index: 0;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1 1 0;
 }
 
 .asmHeader {
