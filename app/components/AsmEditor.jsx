@@ -45,19 +45,29 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
   const [tooltip, setTooltip]   = useState(null); // { x, y, message } | null
 
   const COLS = ['label', 'opcode', 'operand'];
-  
+
   // 500ms debounce
   useEffect(() => {
     const t = setTimeout(() => setWarnings(checkSyntax(rows)), 500);
     return () => clearTimeout(t);
   }, [rows]);
+  useEffect(() => {
+    if (!tooltip) return;
+    const stillWarn = warnings[tooltip.rowId]?.[tooltip.col];
+    if (!stillWarn) {
+      setTooltip(null);          // 警告已修复 → 立即收起
+    } else if (stillWarn !== tooltip.message) {
+      setTooltip(t => ({ ...t, message: stillWarn })); // 警告变化 → 更新文字
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [warnings]);  // 故意不依赖 tooltip，避免循环
 
-  const showTooltip = (e, message) => {
+  const showTooltip = (e, rowId, col, message) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setTooltip({
       x: rect.left + rect.width / 2,
       y: rect.bottom + 10,
-      message,
+      rowId, col, message,
     });
   };
   const hideTooltip = () => setTooltip(null);
@@ -326,7 +336,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
                 className={clsx(styles.asmCell, styles.asmCellLabel, warnings[row.id]?.label && styles.asmCellWarn)}
                 data-asm-cell data-row-id={row.id} data-col="label"
                 onMouseEnter={warnings[row.id]?.label
-                  ? (e) => showTooltip(e, warnings[row.id].label) : undefined}
+                  ? (e) => showTooltip(e, row.id, 'label', warnings[row.id].label) : undefined}
                 onMouseLeave={warnings[row.id]?.label ? hideTooltip : undefined}
               >
                 <input
@@ -348,7 +358,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
                 className={clsx(styles.asmCell, warnings[row.id]?.opcode && styles.asmCellWarn)}
                 data-asm-cell data-row-id={row.id} data-col="opcode"
                 onMouseEnter={warnings[row.id]?.opcode
-                  ? (e) => showTooltip(e, warnings[row.id].opcode) : undefined}
+                  ? (e) => showTooltip(e, row.id, 'opcode', warnings[row.id].opcode) : undefined}
                 onMouseLeave={warnings[row.id]?.opcode ? hideTooltip : undefined}
               >
                 <input
@@ -370,7 +380,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
                 className={clsx(styles.asmCell, warnings[row.id]?.operand && styles.asmCellWarn)}
                 data-asm-cell data-row-id={row.id} data-col="operand"
                 onMouseEnter={warnings[row.id]?.operand
-                  ? (e) => showTooltip(e, warnings[row.id].operand) : undefined}
+                  ? (e) => showTooltip(e, row.id, 'operand', warnings[row.id].operand) : undefined}
                 onMouseLeave={warnings[row.id]?.operand ? hideTooltip : undefined}
               >
                 <input
