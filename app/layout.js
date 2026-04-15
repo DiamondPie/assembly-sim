@@ -22,14 +22,37 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col">
         {children}
         <Analytics />
-        <Toaster position="bottom-left" toastOptions={{ 
-          duration: 3000, 
-          style: {
-            borderRadius: '10px',
-            background: '#333',
-            color: '#fff',
-          }, 
-        }} />
+        <Toaster
+          position="bottom-left"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              borderRadius: '10px',
+              background: 'rgba(15, 15, 20, 0.92)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-color-1)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(233,160,255,0.08)',
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
+              fontSize: '13px',
+              fontFamily: 'var(--font-mono, ui-monospace, monospace)',
+              padding: '10px 14px',
+              maxWidth: '380px',
+            },
+            success: {
+              iconTheme: {
+                primary: 'var(--accent-primary)',     // #e9a0ff
+                secondary: '#0a0a0f',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ff7a90',
+                secondary: '#0a0a0f',
+              },
+            },
+          }}
+        />
       </body>
     </html>
   );

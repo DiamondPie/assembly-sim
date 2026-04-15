@@ -298,30 +298,42 @@
   position: fixed;
   transform: translateX(-50%);
   z-index: 9999;
-  max-width: 260px;
-  background: #1f2937;
-  color: #f9fafb;
+  max-width: 280px;
+  background: rgba(15, 15, 20, 0.94);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color-1);
   font-size: 12px;
-  line-height: 1.45;
-  padding: 8px 10px;
-  border-radius: 6px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.25);
-  pointer-events: none;          /* 不挡操作 */
-  animation: tooltipFadeIn 120ms ease-out;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  padding: 10px 12px;
+  border-radius: 8px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 200, 80, 0.18),       /* 暖色描边暗示 warning */
+    0 0 24px rgba(255, 200, 80, 0.06);
+  pointer-events: none;
+  animation: tooltipFadeIn 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* 凸起小三角，指向被警告单元格 */
 .warningTooltip::before {
   content: '';
   position: absolute;
-  top: -4px;
+  top: -6px;
   left: 50%;
-  transform: translateX(-50%);
-  width: 0; height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-bottom: 6px solid #1f2937;   /* 凸起小三角指向被警告单元格 */
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background: rgba(15, 15, 20, 0.94);
+  border-left: 1px solid var(--border-color-1);
+  border-top: 1px solid var(--border-color-1);
 }
+
 @keyframes tooltipFadeIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
