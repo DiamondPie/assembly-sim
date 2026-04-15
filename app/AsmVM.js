@@ -373,16 +373,13 @@ export function provideInput(state, value) {
   next.pc              = state.pc + 1; // advance past IN
   next.currentNotation = `IN → CON(${state.inputTarget}) = ${isNaN(num) ? 0 : num}`;
 
-  next.trace.push({
-    step:    state.trace.length,
-    pc:      state.pc,
-    r:       next.r,
-    memory:  snapshotMemory(next.memory),
-    flags:   { ...next.flags },
+  const updatedTrace = [...state.trace];
+  updatedTrace[updatedTrace.length - 1] = {
+    ...updatedTrace[updatedTrace.length - 1],
+    memory:   snapshotMemory(next.memory),
     notation: next.currentNotation,
-    opcode:  'IN',
-    operand: state.inputTarget,
-  });
+  };
+  next.trace = updatedTrace;
 
   return next;
 }
