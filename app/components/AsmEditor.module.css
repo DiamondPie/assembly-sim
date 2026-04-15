@@ -1,5 +1,5 @@
 .asmRoot {
-  font-family: 'Google Sans Code', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-family: var(--font-mono), 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
   color: var(--text-primary, #fff);
   width: 100%;
   margin: 0 auto;
