@@ -254,7 +254,7 @@ function blocksToGraph(blocks, currentRowId, vmFlags) {
       labelStyle: {
         fill: NORMAL_COLOR,
         fontSize: 10,
-        fontFamily: "'Google Sans Code', monospace",
+        fontFamily: "var(--font-mono), monospace",
       },
       labelBgStyle: {
         fill: 'var(--bg-primary, #010101)',
