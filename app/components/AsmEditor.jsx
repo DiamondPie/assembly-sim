@@ -44,6 +44,8 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
   const [warnings, setWarnings] = useState({});
   const [tooltip, setTooltip]   = useState(null); // { x, y, message } | null
 
+  const COLS = ['label', 'opcode', 'operand'];
+  
   // 500ms debounce
   useEffect(() => {
     const t = setTimeout(() => setWarnings(checkSyntax(rows)), 500);
@@ -102,49 +104,134 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
     setRows(prev => prev.map(r => r.id === id ? { ...r, [col]: value } : r));
   };
 
+  const moveCursorToEnd = (id, col) => {
+    setTimeout(() => {
+      const el = inputRefs.current[id]?.[col];
+      if (!el) return;
+      el.focus();
+      const len = el.value.length;
+      el.setSelectionRange(len, len);
+    }, 0);
+  };
+  const moveCursorToStart = (id, col) => {
+    setTimeout(() => {
+      const el = inputRefs.current[id]?.[col];
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(0, 0);
+    }, 0);
+  };
   const handleKeyDown = (e, id, col) => {
-    const cols = ['label', 'opcode', 'operand'];
-    const colIdx = cols.indexOf(col);
-
+    const colIdx = COLS.indexOf(col);
+    const rowIdx = rows.findIndex(r => r.id === id);
+    const row    = rows[rowIdx];
+    const value  = e.target.value;
+    const caret  = e.target.selectionStart;
+    const caretEnd = e.target.selectionEnd;
+    const atStart = caret === 0 && caretEnd === 0;
+    const atEnd   = caret === value.length && caretEnd === value.length;
+  
+    // ── Enter：在当前行下方插入新行，焦点到 opcode ──
     if (e.key === 'Enter') {
       e.preventDefault();
-      const currentRowIdx = rows.findIndex(r => r.id === id);
-      const isLast = currentRowIdx === rows.length - 1;
-      if (isLast) {
-        const newId = _id;
-        addRow(id);
-        setTimeout(() => focusCell(newId, 'label'), 0);
-      } else {
-        const nextId = rows[currentRowIdx + 1].id;
-        focusCell(nextId, 'label');
-      }
+      const newRow = makeRow();
+      setRows(prev => {
+        const i = prev.findIndex(r => r.id === id);
+        const next = [...prev];
+        next.splice(i + 1, 0, newRow);
+        return next;
+      });
+      setTimeout(() => focusCell(newRow.id, 'opcode'), 0);
+      return;
     }
-
+  
+    // ── Tab：保留原行为 ──
     if (e.key === 'Tab') {
       e.preventDefault();
       const dir = e.shiftKey ? -1 : 1;
-      const nextColIdx = colIdx + dir;
-      if (nextColIdx >= 0 && nextColIdx < cols.length) {
-        focusCell(id, cols[nextColIdx]);
-      } else if (nextColIdx >= cols.length) {
-        const currentRowIdx = rows.findIndex(r => r.id === id);
-        const isLast = currentRowIdx === rows.length - 1;
-        if (isLast) {
-          const newId = _id;
-          addRow(id);
-          setTimeout(() => focusCell(newId, 'label'), 0);
+      const next = colIdx + dir;
+      if (next >= 0 && next < COLS.length) {
+        focusCell(id, COLS[next]);
+      } else if (next >= COLS.length) {
+        if (rowIdx === rows.length - 1) {
+          const nr = makeRow();
+          setRows(prev => [...prev, nr]);
+          setTimeout(() => focusCell(nr.id, 'label'), 0);
         } else {
-          focusCell(rows[currentRowIdx + 1].id, 'label');
+          focusCell(rows[rowIdx + 1].id, 'label');
         }
-      } else {
-        const currentRowIdx = rows.findIndex(r => r.id === id);
-        if (currentRowIdx > 0) focusCell(rows[currentRowIdx - 1].id, 'operand');
+      } else if (rowIdx > 0) {
+        focusCell(rows[rowIdx - 1].id, 'operand');
       }
+      return;
     }
-
+  
+    // ── Alt+Backspace / Alt+Delete：保留原"删除整行" ──
     if ((e.key === 'Backspace' || e.key === 'Delete') && e.altKey) {
       e.preventDefault();
       deleteRow(id);
+      return;
+    }
+  
+    // ── Backspace（无修饰键，且单元格为空）── 
+    if (e.key === 'Backspace' && value === '') {
+      if (col === 'opcode' || col === 'operand') {
+        e.preventDefault();
+        const prevCol = COLS[colIdx - 1];
+        moveCursorToEnd(id, prevCol);
+        return;
+      }
+      if (col === 'label') {
+        const rowEmpty = !row.opcode.trim() && !row.operand.trim();
+        if (rowEmpty && rowIdx > 0) {
+          e.preventDefault();
+          const prevId = rows[rowIdx - 1].id;
+          setRows(prev => prev.filter(r => r.id !== id));
+          moveCursorToEnd(prevId, 'operand');
+          return;
+        }
+        // 不为空 → 不做事（默认 Backspace 在空字符串本就无害）
+      }
+    }
+  
+    // ── Space：智能跳列 ──
+    if (e.key === ' ' && (col === 'label' || col === 'opcode')) {
+      const hasContent = value.length > 0;
+      const rightCol   = col === 'label' ? 'opcode' : 'operand';
+      const rightEmpty = !(row[rightCol]?.trim());
+      if (hasContent && atEnd && rightEmpty) {
+        e.preventDefault();
+        moveCursorToStart(id, rightCol);
+        return;
+      }
+    }
+  
+    // ── ArrowLeft：在内容最左侧 → 跳到左侧单元格末尾 ──
+    if (e.key === 'ArrowLeft' && atStart) {
+      if (col === 'opcode' || col === 'operand') {
+        e.preventDefault();
+        moveCursorToEnd(id, COLS[colIdx - 1]);
+        return;
+      }
+      if (col === 'label' && rowIdx > 0) {
+        e.preventDefault();
+        moveCursorToEnd(rows[rowIdx - 1].id, 'operand');
+        return;
+      }
+    }
+  
+    // ── ArrowRight：在内容最右侧 → 跳到右侧单元格开头 ──
+    if (e.key === 'ArrowRight' && atEnd) {
+      if (col === 'label' || col === 'opcode') {
+        e.preventDefault();
+        moveCursorToStart(id, COLS[colIdx + 1]);
+        return;
+      }
+      if (col === 'operand' && rowIdx < rows.length - 1) {
+        e.preventDefault();
+        moveCursorToStart(rows[rowIdx + 1].id, 'label');
+        return;
+      }
     }
   };
 
