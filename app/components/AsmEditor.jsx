@@ -347,8 +347,33 @@ export default function AsmEditor({ rows: externalRows, onRowsChange }) {
                   value={row.label}
                   spellCheck={false}
                   onFocus={() => setFocusedId(row.id)}
-                  onBlur={() => setFocusedId(null)}
-                  onChange={e => updateCell(row.id, 'label', e.target.value)}
+                  onBlur={() => {
+                    setFocusedId(null);
+                    // 兜底：失焦时若非空且无尾冒号 → 补上（覆盖粘贴等异常入口）
+                    const v = row.label.trim();
+                    if (v && !v.endsWith(':')) updateCell(row.id, 'label', v + ':');
+                  }}
+                  onChange={e => {
+                    const newVal = e.target.value;
+                    const oldVal = row.label;
+                    // 删除方向（length 不增）：原样接受，但孤立的 ":" 收敛为 ""
+                    if (newVal.length <= oldVal.length) {
+                      updateCell(row.id, 'label', newVal === ':' ? '' : newVal);
+                      return;
+                    }
+                    // 输入方向（length 增加）
+                    if (newVal === '' || newVal.endsWith(':')) {
+                      updateCell(row.id, 'label', newVal);
+                      return;
+                    }
+                    // 缺冒号 → 补上，并把光标放回冒号前
+                    const cursorPos = e.target.selectionStart ?? newVal.length;
+                    updateCell(row.id, 'label', newVal + ':');
+                    setTimeout(() => {
+                      const el = inputRefs.current[row.id]?.label;
+                      if (el) el.setSelectionRange(cursorPos, cursorPos);
+                    }, 0);
+                  }}
                   onKeyDown={e => handleKeyDown(e, row.id, 'label')}
                 />
               </div>
