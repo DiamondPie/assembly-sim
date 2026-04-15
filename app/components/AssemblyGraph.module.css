@@ -210,58 +210,34 @@
 
 /* ── Handles ──────────────────────────────────── */
 .handle {
-  width: 9px !important;
-  height: 6px !important;
-  background: var(--text-tertiary, #484f58) !important;
-  border: 1px solid var(--border-color-2, #ffffff30) !important;
+  width: 8px !important;
+  height: 8px !important;
+  background: transparent !important;
+  border: none !important;
   min-width: 0 !important;
   min-height: 0 !important;
-  transition: background 0.2s;
 }
 
-/* 顶部 Handle：显示为下半圆，贴在顶边 */
 .handleTop {
-  top: 0 !important; /* 强制贴顶 */
-  /* 圆角设置：左下和右下为圆形 */
-  border-radius: 0 0 5px 5px !important;
+  top: 0 !important;
 }
 
-/* 底部 Handle：显示为上半圆，贴在底边 */
 .handleBottom {
-  bottom: 0 !important; /* 强制贴底 */
-  /* 圆角设置：左上和右上为圆形 */
-  border-radius: 5px 5px 0 0 !important;
+  bottom: 0 !important;
 }
 
-/* 右侧 Handle：显示为左半圆，贴在右边 */
 .handleRight {
-  /* 1. 位置重置：紧贴右侧边缘 */
   right: 0 !important;
   left: auto !important;
-  
-  /* 2. 垂直定位：建议固定在标题栏高度的中心点，而不是整个框的 50% */
-  /* 如果你的标题栏高度约为 40px，那么 top: 20px 配合 translateY(-50%) 是最准的 */
-  top: 20px !important; 
+  top: 20px !important;
   transform: translateY(-50%) !important;
-
-  /* 3. 形状：确保宽度和圆角匹配 */
-  width: 5px !important;  /* 宽度设为 5px */
-  height: 10px !important;
-  border-radius: 5px 0 0 5px !important; /* 左侧圆角 */
-
-  /* 4. 嵌合微调：向右移动 1px 覆盖边框线 */
-  margin-right: -1px; 
-  
-  /* 5. 确保背景和层级 */
-  background: var(--text-tertiary, #484f58) !important;
-  border: 1px solid var(--border-color-2, #ffffff30) !important;
-  border-right: none !important; /* 隐藏右侧边框让嵌合更自然 */
-  z-index: 10;
+  width: 8px !important;
+  height: 8px !important;
+  margin-right: 0;
 }
 
-/* 悬停效果：增强交互感 */
 .handle:hover {
-  background: var(--accent-primary, #e9a0ff) !important;
+  background: transparent !important;
 }
 
 /* ── React Flow global overrides ──────────────── */
