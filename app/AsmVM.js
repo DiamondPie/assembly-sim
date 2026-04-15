@@ -199,6 +199,45 @@ function snapshotMemory(memory) {
   return obj;
 }
 
+function computeHighlight(opcode, operand, prevState, next) {
+  const h = { cells: [], input: false, flags: [] };
+  // JUMP 系：pc 不等于 prevPC+1 说明跳转生效
+  const jumpTaken = !next.error && next.pc !== prevState.pc + 1;
+
+  switch (opcode) {
+    case 'LOAD':
+    case 'ADD':
+    case 'SUBTRACT':
+      h.cells = ['r'];
+      break;
+    case 'STORE':
+    case 'CLEAR':
+    case 'INCREMENT':
+    case 'DECREMENT':
+      h.cells = [operand];
+      break;
+    case 'COMPARE':
+      if (next.flags.GT) h.flags.push('GT');
+      if (next.flags.EQ) h.flags.push('EQ');
+      if (next.flags.LT) h.flags.push('LT');
+      break;
+    case 'JUMP':
+      // h.cells = ['pc'];
+      break;
+    case 'JUMPGT':
+    case 'JUMPEQ':
+    case 'JUMPLT':
+    case 'JUMPNEQ':
+      if (jumpTaken) h.cells = ['pc'];
+      break;
+    case 'IN':
+      h.input = true;
+      break;
+    // OUT / HALT → 不高亮
+  }
+  return h;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // step(state, program) → VMState
 // ─────────────────────────────────────────────────────────────────────────────
@@ -342,6 +381,8 @@ export function step(state, program) {
     }
   }
 
+  const highlight = computeHighlight(opcode, operand, state, next);
+
   // Append trace row
   next.trace.push({
     step:    state.trace.length,
@@ -352,6 +393,7 @@ export function step(state, program) {
     notation,
     opcode,
     operand,
+    highlight,
   });
 
   return next;
@@ -378,6 +420,7 @@ export function provideInput(state, value) {
     ...updatedTrace[updatedTrace.length - 1],
     memory:   snapshotMemory(next.memory),
     notation: next.currentNotation,
+    highlight: { cells: [state.inputTarget], input: false, flags: [] },
   };
   next.trace = updatedTrace;
 

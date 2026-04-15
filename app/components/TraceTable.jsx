@@ -12,6 +12,7 @@ export default function TraceTable({
   rows      = EXAMPLE_ROWS,
   colWidth  = 80,
   height = 320,
+  highlightCells = [], 
 }) {
   const gridCols  = `repeat(${columns.length}, ${colWidth}px)`;
   const tableWidth = columns.length * colWidth;
@@ -52,6 +53,8 @@ export default function TraceTable({
                 {columns.map((col, colIdx) => {
                   const prev    = rowIdx > 0 ? rows[rowIdx - 1][col.key] : undefined;
                   const changed = rowIdx > 0 && prev !== row[col.key] && col.key !== 'pc';
+                  const isLastRow    = rowIdx === rows.length - 1;
+                  const isHighlighted = isLastRow && highlightCells.includes(col.key);
                   return (
                     <div
                       key={col.key}
@@ -60,7 +63,16 @@ export default function TraceTable({
                         styles.dataCell,
                         changed          && styles.cellChanged,
                         col.key === 'pc' && styles.cellPc,
+                        isHighlighted    && styles.cellHighlighted,
                       )}
+                      onAnimationEnd={e => {
+                        if (e.currentTarget.classList.contains(styles.cellHighlighted)) {
+                          e.currentTarget.classList.remove(styles.cellHighlighted);
+                          e.currentTarget.style.opacity = '1';
+                          e.currentTarget.style.transform = 'translateX(0)';
+                          e.currentTarget.style.animation = 'none';
+                        }
+                      }}
                     >
                       <span className={styles.cellText}>
                         {row[col.key] ?? '—'}

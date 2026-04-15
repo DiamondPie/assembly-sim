@@ -136,7 +136,11 @@ export default function Page() {
   const currentRowId = vmState?.trace?.length > 0
     ? (program.instructions[vmState.trace[vmState.trace.length - 1].pc]?.rowId ?? null)
     : null;
-    
+  
+  const latestHighlight = vmState?.trace?.length > 0
+    ? vmState.trace[vmState.trace.length - 1].highlight
+    : null;
+
   return (
     <main className="min-h-screen p-6 md:p-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[95%] mx-auto">
@@ -149,7 +153,7 @@ export default function Page() {
         {/* Right column — Trace Table + SimControls */}
         <div className="flex flex-col gap-6">
           <div>
-            <TraceTable columns={traceColumns} rows={traceRows} />
+            <TraceTable columns={traceColumns} rows={traceRows} highlightCells={latestHighlight?.cells ?? []}/>
           </div>
           <div className="flex flex-col h-full">
             <SimControls
@@ -160,6 +164,8 @@ export default function Page() {
               onRun={handleRun}
               onStep={handleStep}
               notation={notation}
+              highlightInput={latestHighlight?.input ?? false}
+              highlightFlags={latestHighlight?.flags ?? []}
             />
           </div>
         </div>

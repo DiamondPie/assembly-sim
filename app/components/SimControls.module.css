@@ -280,3 +280,39 @@
 .topRow .vDivider + .section {
   flex-shrink: 0;
 }
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 1.5px var(--accent-primary, #7c6af7),
+                0 0 8px 3px color-mix(in srgb, var(--accent-primary, #7c6af7) 50%, transparent);
+    border-color: var(--accent-primary, #7c6af7);
+  }
+  50% {
+    box-shadow: none;
+    border-color: transparent;
+  }
+}
+
+@keyframes glowOnce {
+  50% {
+    box-shadow: 0 0 0 1.5px var(--accent-primary, #7c6af7),
+                0 0 8px 3px color-mix(in srgb, var(--accent-primary, #7c6af7) 50%, transparent);
+    border-color: var(--accent-primary, #7c6af7);
+  }
+  0%, 100% {
+    box-shadow: none;
+    border-color: transparent;
+  }
+}
+
+.inputHighlighted {
+  border: 1.5px solid var(--accent-primary, #7c6af7) !important;
+  /* border-radius: 0.4rem; */
+  animation: glowPulse 1.2s ease-in-out infinite;
+}
+
+.flagHighlighted {
+  border: 1.5px solid var(--accent-primary, #7c6af7);
+  border-radius: 3px;
+  animation: glowOnce 0.6s ease-in-out forwards;
+}

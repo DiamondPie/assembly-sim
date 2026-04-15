@@ -48,6 +48,8 @@ export default function SimControls({
   onRun,
   onStep,
   notation       = '',
+  highlightInput = false,
+  highlightFlags = [],
 }) {
   // Local fallback state so the component is usable standalone
   const [localInput, setLocalInput] = useState('');
@@ -90,7 +92,7 @@ export default function SimControls({
             <span className={styles.sectionLabel}>Input</span>
             <div className={styles.inputRow}>
               <input
-                className={styles.numInput}
+                className={clsx(styles.numInput, highlightInput && styles.inputHighlighted)}
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
@@ -126,7 +128,12 @@ export default function SimControls({
               {flagEntries.map(f => (
                 <span
                   key={`v-${f.key}`}
-                  className={clsx(styles.flagValue, flags[f.key] && styles.flagActive)}
+                  className={clsx(
+                    styles.flagValue, 
+                    flags[f.key] && styles.flagActive,
+                    highlightFlags.includes(f.key) && styles.flagHighlighted, 
+                  )}
+                  onAnimationEnd={e => e.currentTarget.classList.remove(styles.flagHighlighted)}
                 >
                   {flags[f.key] ? '1' : '0'}
                 </span>
