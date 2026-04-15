@@ -118,7 +118,14 @@ export function checkSyntax(rows) {
       if (NO_OPERAND_OPS.has(opcode)) {
         // HALT 不需要 operand
       } else if (opcode === '.DATA') {
-        if (!label) w.label = '.DATA must have a label (the variable name).';
+        if (!label) {
+          w.label = '.DATA must have a label (the variable name).';
+        }
+        if (!operand) {
+          w.operand = '.DATA requires an integer initial value (e.g. 0).';
+        } else if (!/^-?\d+$/.test(operand)) {
+          w.operand = `.DATA operand must be a valid integer, got "${operand}".`;
+        }
       } else if (!operand) {
         w.operand = `Opcode "${opcode}" requires an operand.`;
       } else if (JUMP_OPS.has(opcode) && !labels.has(operand)) {
@@ -583,7 +590,7 @@ export function parseAsmText(text) {
     const trimmed = ln.trim();
     if (!trimmed) continue;
     if (/^\.(BEGIN|END)\s*$/i.test(trimmed)) continue; 
-    
+
     const p = parseAsmLine(ln);
     if (!p) return null;
     if (!VALID_OPCODES.has(p.opcode)) return null;  // 严格：未知 opcode → 整体不算汇编
