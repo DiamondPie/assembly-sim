@@ -544,7 +544,7 @@ export function run(state, program, maxSteps = 1000) {
     if (steps >= maxSteps) {
       current = {
         ...cloneState(current),
-        error:  `Exceeded ${maxSteps} steps — possible infinite loop`,
+        error:  `Max step (${maxSteps}) is exceeded.\nThe HALT may be unreachable.`,
         halted: true,
       };
       break;

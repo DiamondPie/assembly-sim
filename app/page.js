@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import AsmEditor from './components/AsmEditor';
 import TraceTable from './components/TraceTable';
@@ -210,6 +210,20 @@ export default function Page() {
     setAutoRun(false);
     setInputValue('');
   }, []);
+
+  // ── VM 状态变化时弹 toast ──
+  const prevVmRef = useRef(null);
+  useEffect(() => {
+    if (!vmState) { prevVmRef.current = null; return; }
+    const prev = prevVmRef.current;
+    prevVmRef.current = vmState;
+
+    // 出现新错误
+    if (vmState.error && vmState.error !== prev?.error) {
+      toast.error(vmState.error, { duration: 5000 });
+    }
+  }, [vmState]);
+
   return (
     <main className="min-h-screen p-6 md:p-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[95%] mx-auto">
