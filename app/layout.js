@@ -1,10 +1,15 @@
-import { Google_Sans_Code } from "next/font/google";
+import { Google_Sans_Code, Fira_Code } from "next/font/google";
 import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
 const googleSansCode = Google_Sans_Code({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const firaCode = Fira_Code({
+  variable: "--font-fira-code",
   subsets: ["latin"],
 });
 
@@ -17,7 +22,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${googleSansCode.variable} h-full antialiased`}
+      className={`${googleSansCode.variable}  ${firaCode.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}

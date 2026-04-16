@@ -193,7 +193,7 @@ export default function Page() {
   if (vmState?.error) {
     notation = `⚠ ${vmState.error}`;
   } else if (vmState?.waitingForInput) {
-    notation = `⌨ waiting for input → ${vmState.inputTarget}`;
+    notation = `⌨ waiting for input -> ${vmState.inputTarget}`;
   } else if (vmState?.halted) {
     notation = `■ halted${
       vmState.output.length ? ` · output: [${vmState.output.join(', ')}]` : ''

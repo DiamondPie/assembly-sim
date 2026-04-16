@@ -257,6 +257,13 @@
   background: color-mix(in oklab, var(--accent-secondary, #00b8d4), transparent 92%);
 }
 
+.notationText,
+.notationPlaceholder {
+  font-family: var(--font-fira-code), ui-monospace, monospace;
+  font-feature-settings: "liga" 1, "calt" 1, "ss01" 1, "ss02" 1, "ss03" 1, "ss04" 1, "ss05" 1, "ss06" 1, "cv31" 1;
+  font-variant-ligatures: contextual;
+}
+
 .notationText {
   font-size: 0.88rem;
   color: var(--text-primary, #fff);
@@ -268,7 +275,6 @@
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   color: var(--text-tertiary, #484f58);
-  font-style: italic;
 }
 
 /* ── Padding helpers for sections without special wrappers ────────────────── */

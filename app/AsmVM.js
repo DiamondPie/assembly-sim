@@ -276,20 +276,20 @@ function resolveVar(name, memory) {
 function buildNotation(opcode, operand, r, memory) {
   const v = resolveVar(operand, memory);
   switch (opcode) {
-    case 'LOAD':      return `R ← CON(${operand}) [=${v}]`;
-    case 'STORE':     return `CON(${operand}) ← R [=${r}]`;
-    case 'CLEAR':     return `CON(${operand}) ← 0`;
-    case 'ADD':       return `R ← R + CON(${operand}) [=${r}+${v}]`;
-    case 'SUBTRACT':  return `R ← R − CON(${operand}) [=${r}−${v}]`;
-    case 'INCREMENT': return `CON(${operand}) ← CON(${operand}) + 1 [=${v}+1]`;
-    case 'DECREMENT': return `CON(${operand}) ← CON(${operand}) − 1 [=${v}−1]`;
-    case 'COMPARE':   return `compare CON(${operand})[=${v}] vs R[=${r}]`;
-    case 'JUMP':      return `PC ← ${operand}`;
-    case 'JUMPGT':    return `if GT: PC ← ${operand}`;
-    case 'JUMPEQ':    return `if EQ: PC ← ${operand}`;
-    case 'JUMPLT':    return `if LT: PC ← ${operand}`;
-    case 'JUMPNEQ':   return `if ¬EQ: PC ← ${operand}`;
-    case 'IN':        return `IN → CON(${operand})`;
+    case 'LOAD':      return `R <- CON(${operand}) [=${v}]`;
+    case 'STORE':     return `CON(${operand}) <- R [=${r}]`;
+    case 'CLEAR':     return `CON(${operand}) <- 0`;
+    case 'ADD':       return `R <- R + CON(${operand}) [=${r}+${v}]`;
+    case 'SUBTRACT':  return `R <- R − CON(${operand}) [=${r}−${v}]`;
+    case 'INCREMENT': return `CON(${operand}) <- CON(${operand}) + 1 [=${v}+1]`;
+    case 'DECREMENT': return `CON(${operand}) <- CON(${operand}) − 1 [=${v}−1]`;
+    case 'COMPARE':   return `CON(${operand}) ${v > r ? '>' : v < r ? '<' : '='} R [${v}${v > r ? '>' : v < r ? '<' : '='}${r}] -> ${v > r ? 'GT' : v < r ? 'LT' : 'EQ'}=1`;
+    case 'JUMP':      return `PC <- ${operand}`;
+    case 'JUMPGT':    return `if GT=1: PC <- ${operand}`;
+    case 'JUMPEQ':    return `if EQ=1: PC <- ${operand}`;
+    case 'JUMPLT':    return `if LT=1: PC <- ${operand}`;
+    case 'JUMPNEQ':   return `if EQ=0: PC <- ${operand}`;
+    case 'IN':        return `IN -> CON(${operand})`;
     case 'OUT':       return `OUT CON(${operand}) [=${v}]`;
     case 'HALT':      return `HALT`;
     default:          return `${opcode} ${operand}`;
@@ -516,7 +516,7 @@ export function provideInput(state, value) {
   next.waitingForInput = false;
   next.inputTarget     = null;
   next.pc              = state.pc + 1; // advance past IN
-  next.currentNotation = `IN → CON(${state.inputTarget}) = ${isNaN(num) ? 0 : num}`;
+  next.currentNotation = `IN -> CON(${state.inputTarget}) = ${isNaN(num) ? 0 : num}`;
 
   const updatedTrace = [...state.trace];
   updatedTrace[updatedTrace.length - 1] = {
