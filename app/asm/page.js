@@ -6,7 +6,7 @@ import AsmEditor from '@/app/components/AsmEditor';
 import TraceTable from '@/app/components/TraceTable';
 import AssemblyGraph from '@/app/components/AssemblyGraph';
 import SimControls from '@/app/components/SimControls';
-import { checkSyntax, parseAsmText, isEditorEmpty } from '@/app/AsmVM';
+import { checkSyntax, parseAsmText, isEditorEmpty, decodeProgram } from '@/app/AsmVM';
 
 import {
   parse,
@@ -36,6 +36,45 @@ export default function Page() {
   const [inputValue, setInputValue] = useState('');
   const [prevProgram, setPrevProgram] = useState(null);
   const [autoRun, setAutoRun] = useState(false);
+
+  // 首次挂载：尝试从 URL ?p=<base64> 解码
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const match = window.location.search.match(/[?&]p=([^&]+)/);
+    const encoded = match ? match[1] : null;
+    if (!encoded) return;
+
+    const cleanUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      // 移除 ?p 参数，避免刷新 / 二次编辑时覆盖用户修改
+      params.delete('p');
+      const newQuery = params.toString();
+      const newUrl = window.location.pathname + (newQuery ? `?${newQuery}` : '');
+      window.history.replaceState({}, '', newUrl);
+    };
+
+    const text = decodeProgram(encoded);
+    if (!text) {
+      toast.error('Share link is invalid or corrupted. Editor left empty.');
+      setRows([mk('', '', '')]);
+      cleanUrl();
+      return;
+    }
+
+    const parsed = parseAsmText(text);
+    if (!parsed) {
+      toast.error('Share link does not contain a valid program. Editor left empty.');
+      setRows([mk('', '', '')]);
+      cleanUrl();
+      return;
+    }
+
+    setRows(parsed.lines.map(p => mk(p.label, p.opcode, p.operand)));
+    toast.success(`Loaded ${parsed.lines.length} lines from share link.`);
+    cleanUrl();
+    // 只跑一次
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 每次 rows 变化都重新解析
   const program = useMemo(

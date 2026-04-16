@@ -373,3 +373,102 @@
   background: rgba(255, 90, 110, 0.14);
   color: #ff8593;
 }
+
+.exportWrap {
+  position: relative;
+  display: inline-block;
+}
+
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.exportCaret {
+  transition: transform var(--transition-fast);
+  opacity: 0.85;
+}
+.exportCaretOpen {
+  transform: rotate(180deg);
+}
+
+.exportMenu {
+  position: fixed;
+  right: 0;
+  z-index: 9999;
+  min-width: 220px;
+  padding: 6px;
+  background: rgba(15, 15, 20, 0.94);
+  border: 1px solid var(--border-color-1, #ffffff14);
+  border-radius: 10px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(233, 160, 255, 0.08),
+    0 0 28px rgba(233, 160, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: exportMenuIn 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+}
+
+/* 指向按钮的小凸起 */
+.exportMenu::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 18px;
+  width: 10px;
+  height: 10px;
+  background: rgba(15, 15, 20, 0.94);
+  border-left: 1px solid var(--border-color-1, #ffffff14);
+  border-top: 1px solid var(--border-color-1, #ffffff14);
+  transform: rotate(45deg);
+}
+
+.exportItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+.exportItem:hover {
+  background: rgba(233, 160, 255, 0.08);
+}
+.exportItem:active {
+  background: rgba(233, 160, 255, 0.14);
+}
+
+.exportItemTitle {
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+.exportItem:hover .exportItemTitle {
+  color: var(--accent-primary, #e9a0ff);
+}
+
+.exportItemDesc {
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary, #484f58);
+}
+
+@keyframes exportMenuIn {
+  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}

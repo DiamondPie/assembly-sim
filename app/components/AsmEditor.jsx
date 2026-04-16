@@ -3,10 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './AsmEditor.module.css';
-import { checkSyntax } from '@/app/AsmVM';   // 路径按你的项目调整
+import { checkSyntax, isEditorEmpty, rowsToText, rowsToCompactText, encodeProgram } from '@/app/AsmVM';   // 路径按你的项目调整
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
-import { isEditorEmpty } from '@/app/AsmVM';
 
 const EXAMPLE_ROWS = [
   { label: '',        opcode: 'IN',        operand: 'N' },
@@ -47,6 +46,11 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
   const [tooltip, setTooltip]   = useState(null); // { x, y, message } | null
 
   const rowsContainerRef = useRef(null);
+
+  const [exportMenuPos, setExportMenuPos] = useState({ top: 0, right: 0 });
+  const [exportOpen, setExportOpen] = useState(false);
+  const exportMenuRef = useRef(null);
+  const exportMenuPopupRef = useRef(null);
 
   const COLS = ['label', 'opcode', 'operand'];
 
@@ -271,17 +275,59 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
     }
   };
 
-  const handleExport = () => {
-    const lines = rows
-      .filter(r => r.label || r.opcode || r.operand)
-      .map(r => `${r.label.padEnd(10)}  ${r.opcode.padEnd(8)}  ${r.operand}`)
-      .join('\n');
-    if (!lines) return;
-    navigator.clipboard.writeText(lines).then(() => {
+  // 点击外部 / Esc 关闭下拉
+  useEffect(() => {
+    if (!exportOpen) return;
+    const onClick = (e) => {
+      const inTrigger = exportMenuRef.current?.contains(e.target);
+      const inPopup   = exportMenuPopupRef.current?.contains(e.target);
+      if (!inTrigger && !inPopup) setExportOpen(false);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') setExportOpen(false); };
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [exportOpen]);
+
+  const exportAsText = async () => {
+    const text = rowsToText(rows);
+    if (!text) {
+      toast.error('Editor is empty, nothing to export.');
+      setExportOpen(false);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       toast.success('Program copied to clipboard.');
       setTimeout(() => setCopied(false), 1500);
-    });
+    } catch {
+      toast.error('Failed to access clipboard.');
+    }
+    setExportOpen(false);
+  };
+
+  const exportAsShareLink = async () => {
+    const text = rowsToCompactText(rows);
+    if (!text) {
+      toast.error('Editor is empty, nothing to share.');
+      setExportOpen(false);
+      return;
+    }
+    const b64 = encodeProgram(text);
+    const url = `${window.location.origin}${window.location.pathname}?p=${b64}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success('Share link copied to clipboard.');
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error('Failed to access clipboard.');
+    }
+    setExportOpen(false);
   };
 
   const stats = {
@@ -323,12 +369,51 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
           >
             Load example
           </button>
-          <button
-            className={clsx(styles.asmBtn, styles.asmBtnPrimary)}
-            onClick={handleExport}
-          >
-            {copied ? 'Copied ✓' : 'Export ↗'}
-          </button>
+          <div className={styles.exportWrap} ref={exportMenuRef}>
+            <button
+              className={clsx(styles.asmBtn, styles.asmBtnPrimary, styles.exportBtn)}
+              onClick={(e) => {
+                if (!exportOpen) {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setExportMenuPos({
+                    top: rect.bottom + 6,
+                    right: window.innerWidth - rect.right,
+                  });
+                }
+                setExportOpen(o => !o);
+              }}
+              aria-haspopup="menu"
+              aria-expanded={exportOpen}
+            >
+              {copied ? 'Copied ✓' : 'Export'}
+              <svg
+                className={clsx(styles.exportCaret, exportOpen && styles.exportCaretOpen)}
+                width="9" height="9" viewBox="0 0 10 10" fill="none"
+                stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+              >
+                <path d="M2 3.5l3 3 3-3" />
+              </svg>
+            </button>
+          </div>
+
+          {exportOpen && typeof document !== 'undefined' && createPortal(
+            <div
+              ref={exportMenuPopupRef}
+              className={styles.exportMenu}
+              role="menu"
+              style={{ top: exportMenuPos.top, right: exportMenuPos.right }}
+            >
+              <button className={styles.exportItem} onClick={exportAsText} role="menuitem">
+                <span className={styles.exportItemTitle}>Copy to clipboard</span>
+                <span className={styles.exportItemDesc}>Plain assembly text</span>
+              </button>
+              <button className={styles.exportItem} onClick={exportAsShareLink} role="menuitem">
+                <span className={styles.exportItemTitle}>Copy share link</span>
+                <span className={styles.exportItemDesc}>URL with encoded program</span>
+              </button>
+            </div>,
+            document.body
+          )}
         </div>
       </div>
 

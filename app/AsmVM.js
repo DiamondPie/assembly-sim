@@ -68,6 +68,8 @@
 //   trace:           TraceRow[],
 // }
 
+import LZString from 'lz-string';
+
 const NO_OPERAND_OPS = new Set(['HALT']);
 const JUMP_OPS = new Set(['JUMP','JUMPGT','JUMPEQ','JUMPLT','JUMPNEQ']);
 const DATA_REF_OPS = new Set([
@@ -641,4 +643,51 @@ export function isEditorEmpty(rows) {
   return rows.every(r =>
     !(r.label?.trim()) && !(r.opcode?.trim()) && !(r.operand?.trim())
   );
+}
+
+/** 把汇编 rows 序列化为纯文本（给分享链接/剪贴板用） */
+export function rowsToText(rows) {
+  return rows
+    .filter(r => r.label || r.opcode || r.operand)
+    .map(r => {
+      const label = (r.label ?? '').trim();
+      const opcode = (r.opcode ?? '').trim();
+      const operand = (r.operand ?? '').trim();
+      return `${label.padEnd(10)}  ${opcode.padEnd(10)}  ${operand}`.trimEnd();
+    })
+    .join('\n');
+}
+
+/** 压缩并 URL-safe 编码。返回可直接用作查询参数的字符串。 */
+export function encodeProgram(text) {
+  return LZString.compressToEncodedURIComponent(text);
+}
+
+/** 解码并解压。失败返回 null。 */
+export function decodeProgram(encoded) {
+  try {
+    const text = LZString.decompressFromEncodedURIComponent(encoded);
+    // 解压失败时，LZ-String 会返回 null 或空字符串
+    if (!text) return null;
+    return text;
+  } catch {
+    return null;
+  }
+}
+
+/** 紧凑序列化：单空格分隔，只保留必要字段（给分享链接用） */
+export function rowsToCompactText(rows) {
+  return rows
+    .filter(r => r.label || r.opcode || r.operand)
+    .map(r => {
+      const parts = [];
+      const label = (r.label ?? '').trim();
+      const opcode = (r.opcode ?? '').trim();
+      const operand = (r.operand ?? '').trim();
+      if (label) parts.push(label);
+      if (opcode) parts.push(opcode);
+      if (operand) parts.push(operand);
+      return parts.join(' ');
+    })
+    .join('\n');
 }
