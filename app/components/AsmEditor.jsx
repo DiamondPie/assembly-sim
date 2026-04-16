@@ -366,7 +366,6 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
                   ref={el => setRef(row.id, 'label', el)}
                   className={clsx(styles.asmInput, styles.asmInputLabel)}
                   type="text"
-                  placeholder="LABEL:"
                   value={row.label}
                   spellCheck={false}
                   onFocus={() => setFocusedId(row.id)}
@@ -413,7 +412,6 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
                   ref={el => setRef(row.id, 'opcode', el)}
                   className={clsx(styles.asmInput, styles.asmInputOpcode)}
                   type="text"
-                  placeholder="OPCODE"
                   value={row.opcode}
                   spellCheck={false}
                   onFocus={() => setFocusedId(row.id)}
@@ -435,7 +433,6 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
                   ref={el => setRef(row.id, 'operand', el)}
                   className={clsx(styles.asmInput, styles.asmInputOperand)}
                   type="text"
-                  placeholder="operand / comment"
                   value={row.operand}
                   spellCheck={false}
                   onFocus={() => setFocusedId(row.id)}
