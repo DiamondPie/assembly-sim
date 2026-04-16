@@ -93,11 +93,17 @@ export default function Page() {
 
   const handleStep = useCallback(() => {
     if (!guardSyntax()) return;
-    const cur = ensureVM();
-    if (cur.halted || cur.error || cur.waitingForInput) {
-      setVmState(cur); // 把潜在的初始化写回
+    let cur = ensureVM();
+    // 如果已经 halted 或 error → 重新创建 VM 从头开始
+    if (cur.halted || cur.error) {
+      cur = createVM(program);
+    }
+
+    if (cur.waitingForInput) {
+      setVmState(cur);
       return;
     }
+
     setAutoRun(false);
     setVmState(step(cur, program));
   }, [ensureVM, program, guardSyntax]);
