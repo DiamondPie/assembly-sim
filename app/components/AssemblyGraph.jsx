@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -14,6 +14,7 @@ import {
   BaseEdge,
   useNodes,
   MarkerType,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import styles from './AssemblyGraph.module.css';
@@ -438,6 +439,24 @@ function AsmBlockNode({ data }) {
 const NODE_TYPES = { asmBlock: AsmBlockNode };
 const EDGE_TYPES = { jumpEdge: JumpEdge };
 
+function AutoFitView({ nodeCount }) {
+  const { fitView } = useReactFlow();
+  const prevCount = useRef(0);
+
+  useEffect(() => {
+    // 从 0 个节点变为有节点时（开始写第一条指令），或节点数量变化时
+    if (nodeCount > 0 && (prevCount.current === 0 || nodeCount !== prevCount.current)) {
+      // 给一点延迟让 ReactFlow 完成布局测量
+      const t = setTimeout(() => fitView({ padding: 0.3, duration: 250 }), 50);
+      prevCount.current = nodeCount;
+      return () => clearTimeout(t);
+    }
+    if (nodeCount === 0) prevCount.current = 0;
+  }, [nodeCount, fitView]);
+
+  return null;
+}
+
 // rows prop: same shape as AsmEditor rows
 // [{ id, label, opcode, operand }]
 export default function AssemblyGraph({ rows = [], currentRowId = null, vmFlags = null }) {
@@ -483,6 +502,7 @@ export default function AssemblyGraph({ rows = [], currentRowId = null, vmFlags 
             proOptions={{ hideAttribution: true }}
             edgeTypes={EDGE_TYPES}
           >
+            <AutoFitView nodeCount={nodes.length} />
             <Background
               variant={BackgroundVariant.Dots}
               gap={20}
