@@ -96,6 +96,22 @@ export function checkSyntax(rows) {
     else                    labels.add(label);
   }
 
+  // ── 检测重复 label ──
+  const labelCount = {};   // labelName → [rowId, rowId, ...]
+  for (const r of rows) {
+    if (r.disabled) continue;
+    const raw = r.label.trim().replace(/:$/, '');
+    if (!raw) continue;
+    if (!labelCount[raw]) labelCount[raw] = [];
+    labelCount[raw].push(r.id);
+  }
+  const duplicateLabels = new Set();
+  for (const [name, ids] of Object.entries(labelCount)) {
+    if (ids.length > 1) {
+      for (const id of ids) duplicateLabels.add(id);
+    }
+  }
+
   const warnings = {};
   for (const r of rows) {
     if (r.disabled) continue;
@@ -106,6 +122,11 @@ export function checkSyntax(rows) {
 
     const w = {};
 
+    if (duplicateLabels.has(r.id)) {
+      const name = r.label.trim().replace(/:$/, '');
+      w.label = `Duplicate label "${name}". Each label must be unique.`;
+    }
+    
     // —— opcode 校验 ——
     if (!opcode) {
       w.opcode = 'Missing opcode. Each non-blank line must specify an instruction.';
@@ -503,7 +524,7 @@ export function provideInput(state, value) {
 // run(state, program, maxSteps?) → VMState
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function run(state, program, maxSteps = 10000) {
+export function run(state, program, maxSteps = 1000) {
   let current = state;
   let steps = 0;
 
