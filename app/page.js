@@ -67,11 +67,21 @@ export default function Page() {
 
   const guardSyntax = useCallback(() => {
     const w = checkSyntax(rows);
-    const count = Object.keys(w).length;
+    const count = Object.keys(w.cells).length;
+
+    // 全局警告（如缺 HALT）用 toast 逐条提示
+    for (const msg of w.global) {
+      toast.error(msg);
+    }
+
     if (count > 0) {
       toast.error(`Cannot run: ${count} line(s) have syntax issues. Hover the highlighted cells for details.`);
       return false;
     }
+    if (w.global.length > 0) {
+      return false;
+    }
+
     return true;
   }, [rows]);
 

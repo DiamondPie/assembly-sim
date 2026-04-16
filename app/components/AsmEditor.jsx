@@ -48,7 +48,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
 
   // 500ms debounce
   useEffect(() => {
-    const t = setTimeout(() => setWarnings(checkSyntax(rows)), 500);
+    const t = setTimeout(() => setWarnings(checkSyntax(rows).cells), 500);
     return () => clearTimeout(t);
   }, [rows]);
   useEffect(() => {

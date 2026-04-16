@@ -126,7 +126,7 @@ export function checkSyntax(rows) {
       const name = r.label.trim().replace(/:$/, '');
       w.label = `Duplicate label "${name}". Each label must be unique.`;
     }
-    
+
     // —— opcode 校验 ——
     if (!opcode) {
       w.opcode = 'Missing opcode. Each non-blank line must specify an instruction.';
@@ -158,7 +158,17 @@ export function checkSyntax(rows) {
 
     if (Object.keys(w).length) warnings[r.id] = w;
   }
-  return warnings;
+  
+  // ── 全局检查 ──
+  const globalWarnings = [];
+  const hasHalt = rows.some(r =>
+    !r.disabled && r.opcode.trim().toUpperCase() === 'HALT'
+  );
+  if (!hasHalt) {
+    globalWarnings.push('Program has no HALT instruction. Execution may not stop properly.');
+  }
+
+  return { cells: warnings, global: globalWarnings };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
