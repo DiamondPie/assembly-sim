@@ -28,24 +28,10 @@ const mk = (label, opcode, operand) => ({
   disabled: false,
 });
 
-const INITIAL_ROWS = [
-  mk('',        'IN',        'N'),
-  mk('START:',  'LOAD',      'TERM'),
-  mk('',        'COMPARE',   'N'),
-  mk('',        'JUMPLT',    'FINISH'),
-  mk('',        'ADD',       'SUM'),
-  mk('',        'STORE',     'SUM'),
-  mk('',        'INCREMENT', 'TERM'),
-  mk('',        'JUMP',      'START'),
-  mk('FINISH:', 'OUT',       'SUM'),
-  mk('',        'HALT',      ''),
-  mk('N:',      '.DATA',     '0'),
-  mk('TERM:',   '.DATA',     '1'),
-  mk('SUM:',    '.DATA',     '0'),
-];
+const initial_row = [mk('', '', '')];
 
 export default function Page() {
-  const [rows, setRows]           = useState(INITIAL_ROWS);
+  const [rows, setRows]           = useState(initial_row);
   const [vmState, setVmState]     = useState(null);
   const [inputValue, setInputValue] = useState('');
   const [prevProgram, setPrevProgram] = useState(null);

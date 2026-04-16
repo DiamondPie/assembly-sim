@@ -586,9 +586,9 @@ export function traceToTableColumns(program) {
 
 /** 把一行文本解析成 { label, opcode, operand }，不能解析返回 null */
 export function parseAsmLine(line) {
-  const trimmed = line.replace(/\t/g, ' ').trim();
+  const stripped = line.replace(/--.*$/, '');
+  const trimmed = stripped.replace(/\t/g, ' ').trim();
   if (!trimmed) return null;
-  // 去掉行尾注释（如果你的汇编支持 ; 注释，可在这里处理；目前先不处理）
 
   const tokens = trimmed.split(/\s+/);
   let label = '', opcode = '', operand = '';
@@ -623,7 +623,7 @@ export function parseAsmText(text) {
     if (/^\.(BEGIN|END)\s*$/i.test(trimmed)) continue; 
 
     const p = parseAsmLine(ln);
-    if (!p) return null;
+    if (!p) continue;
     if (!VALID_OPCODES.has(p.opcode)) return null;  // 严格：未知 opcode → 整体不算汇编
     parsed.push(p);
   }
