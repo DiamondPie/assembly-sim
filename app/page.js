@@ -110,10 +110,9 @@ export default function Page() {
 
   const handleRun = useCallback(() => {
     if (!guardSyntax()) return;
-    const cur = ensureVM();
+    let cur = ensureVM();
     if (cur.halted || cur.error) {
-      setVmState(cur);
-      return;
+      cur = createVM(program);
     }
     setAutoRun(true);
     // run() 会在遇到 IN / HALT / error 时自动停
