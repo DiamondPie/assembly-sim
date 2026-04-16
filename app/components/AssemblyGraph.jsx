@@ -81,7 +81,7 @@ function JumpEdge({ sourceX, sourceY, targetX, targetY, data, style, label, labe
       <BaseEdge path={path} style={style} label={label} labelStyle={labelStyle} labelBgStyle={labelBgStyle} />
       <polygon
         points={`${-5 * arrowScale},${-4 * arrowScale} 0,0 ${-5 * arrowScale},${4 * arrowScale}`}
-        transform={`translate(${targetX}, ${targetY}) rotate(${isRightTarget ? 0 : 90})`}
+        transform={`translate(${targetX}, ${targetY}) rotate(${isRightTarget ? -180 : 90})`}
         fill={color}
       />
     </>

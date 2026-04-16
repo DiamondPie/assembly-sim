@@ -183,7 +183,7 @@
 
 .instrOpcode {
   color: #7dd3fc;
-  min-width: 52px;
+  min-width: 70px;
   flex-shrink: 0;
 }
 
