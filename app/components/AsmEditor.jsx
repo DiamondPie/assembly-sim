@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import styles from './AsmEditor.module.css';
 import { checkSyntax } from '@/app/AsmVM';   // 路径按你的项目调整
 import clsx from 'clsx';
+import toast from 'react-hot-toast';
+import { isEditorEmpty } from '@/app/AsmVM';
 
 const EXAMPLE_ROWS = [
   { label: '',        opcode: 'IN',        operand: 'N' },
@@ -267,6 +269,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
     if (!lines) return;
     navigator.clipboard.writeText(lines).then(() => {
       setCopied(true);
+      toast.success('Program copied to clipboard.');
       setTimeout(() => setCopied(false), 1500);
     });
   };
@@ -300,7 +303,13 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
           </button>
           <button
             className={styles.asmBtn}
-            onClick={() => setRows(EXAMPLE_ROWS.map(r => makeRow(r.label, r.opcode, r.operand)))}
+            onClick={() => {
+              if (!isEditorEmpty(rows)) {
+                toast.error('Editor is not empty. Clear it first before loading the example.');
+                return;
+              }
+              setRows(EXAMPLE_ROWS.map(r => makeRow(r.label, r.opcode, r.operand)));
+            }}
           >
             Load example
           </button>
