@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
 import styles from './TraceTable.module.css';
 import clsx from 'clsx';
 
@@ -17,6 +18,13 @@ export default function TraceTable({
   const gridCols  = `repeat(${columns.length}, ${colWidth}px)`;
   const tableWidth = columns.length * colWidth;
 
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [rows]);
+
   return (
     <div className={styles.root}>
       <div className={styles.toolbar}>
@@ -28,7 +36,7 @@ export default function TraceTable({
       <div className={styles.tableWrap}>
 
         {/* Scrollable body */}
-        <div className={styles.scrollBody} style={{ height }}>
+        <div className={styles.scrollBody} style={{ height }} ref={scrollRef}>
 
           {/* Sticky header — outside the scroll box so it never scrolls away */}
           <div

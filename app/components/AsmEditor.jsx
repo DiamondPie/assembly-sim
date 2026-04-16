@@ -46,6 +46,8 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
   const [warnings, setWarnings] = useState({});
   const [tooltip, setTooltip]   = useState(null); // { x, y, message } | null
 
+  const rowsContainerRef = useRef(null);
+
   const COLS = ['label', 'opcode', 'operand'];
 
   // 500ms debounce
@@ -102,6 +104,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
       next.splice(idx + 1, 0, newRow);
       return next;
     });
+    scrollToBottom();
     return newRow.id;
   };
 
@@ -133,6 +136,12 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
       el.setSelectionRange(0, 0);
     }, 0);
   };
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      const el = rowsContainerRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    }, 0);
+  };
   const handleKeyDown = (e, id, col) => {
     const colIdx = COLS.indexOf(col);
     const rowIdx = rows.findIndex(r => r.id === id);
@@ -154,6 +163,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
         return next;
       });
       setTimeout(() => focusCell(newRow.id, 'opcode'), 0);
+      scrollToBottom();
       return;
     }
   
@@ -331,7 +341,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
           <div className={styles.asmHeaderCell} />
         </div>
 
-        <div className={styles.asmRows}>
+        <div className={styles.asmRows} ref={rowsContainerRef}>
           {rows.map((row, index) => (
             <div
               key={row.id}
