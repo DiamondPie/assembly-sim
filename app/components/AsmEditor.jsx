@@ -243,6 +243,20 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
         return;
       }
     }
+
+    // ── ArrowUp：跳到上一行同列末尾 ──
+    if (e.key === 'ArrowUp' && rowIdx > 0) {
+      e.preventDefault();
+      moveCursorToEnd(rows[rowIdx - 1].id, col);
+      return;
+    }
+
+    // ── ArrowDown：跳到下一行同列末尾 ──
+    if (e.key === 'ArrowDown' && rowIdx < rows.length - 1) {
+      e.preventDefault();
+      moveCursorToEnd(rows[rowIdx + 1].id, col);
+      return;
+    }
   };
 
   const handleExport = () => {
