@@ -7,6 +7,8 @@ import TraceTable from '@/app/components/TraceTable';
 import AssemblyGraph from '@/app/components/AssemblyGraph';
 import SimControls from '@/app/components/SimControls';
 import { checkSyntax, parseAsmText, isEditorEmpty, decodeProgram } from '@/app/AsmVM';
+import Image from 'next/image';
+import logo from '@/public/logo.svg';
 
 import {
   parse,
@@ -291,6 +293,26 @@ export default function Page() {
 
           {/* Bottom — CFG Graph */}
           <AssemblyGraph rows={rows} currentRowId={currentRowId} vmFlags={vmState?.flags ?? null}/>
+        </div>
+      </div>
+
+      {/* 页脚：位于视口下方，必须滚动才能看到 */}
+      <div className='flex justify-center pb-4 h-12 items-center text-gray-500'>
+        <span>Made by</span>
+        
+        <div className="relative w-32 h-full mx-1">
+          <Image 
+            src={logo} 
+            alt="Logo" 
+            fill 
+            className="object-contain"
+          />
+        </div>
+
+        {/* 圆点分隔符 */}
+        <div className="mx-3 h-1 w-1 rounded-full bg-gray-400" aria-hidden="true" />
+
+        <span>Open-sourced at Github</span>
       </div>
     </main>
   );
