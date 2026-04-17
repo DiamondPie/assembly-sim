@@ -6,6 +6,7 @@ import AsmEditor from '@/app/components/AsmEditor';
 import TraceTable from '@/app/components/TraceTable';
 import AssemblyGraph from '@/app/components/AssemblyGraph';
 import SimControls from '@/app/components/SimControls';
+import InstructionSet from '@/app/components/InstructionSet';
 import { checkSyntax, parseAsmText, isEditorEmpty, decodeProgram } from '@/app/AsmVM';
 
 import {
@@ -296,6 +297,7 @@ export default function Page() {
       </div>
 
       <Footer />
+      <InstructionSet />
     </main>
   );
 }
