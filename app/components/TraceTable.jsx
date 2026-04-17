@@ -12,11 +12,12 @@ export default function TraceTable({
   columns   = DEFAULT_COLUMNS,
   rows      = EXAMPLE_ROWS,
   colWidth  = 80,
-  height = 320,
+  height    = 320,
   highlightCells = [], 
 }) {
   const gridCols  = `repeat(${columns.length}, ${colWidth}px)`;
   const tableWidth = columns.length * colWidth;
+  const heightStyle = typeof height === 'number' ? `${height}px` : height;
 
   const scrollRef = useRef(null);
 
@@ -36,7 +37,7 @@ export default function TraceTable({
       <div className={styles.tableWrap}>
 
         {/* Scrollable body */}
-        <div className={styles.scrollBody} style={{ height }} ref={scrollRef}>
+        <div className={styles.scrollBody} style={{ height: heightStyle }} ref={scrollRef}>
 
           {/* Sticky header — outside the scroll box so it never scrolls away */}
           <div

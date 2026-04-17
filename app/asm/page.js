@@ -255,40 +255,42 @@ export default function Page() {
   }, [vmState]);
 
   return (
-    <main className="min-h-screen p-6 md:p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[95%] mx-auto">
+    <main className="flex flex-col">
+      {/* 主内容区：精确占满一个视口高度，内部溢出隐藏 */}
+      <div className="p-6 md:p-6 lg:h-dvh lg:min-h-125 lg:overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[95%] mx-auto h-full">
 
-        {/* Left column — Assembly Editor, full height */}
-        <div className="flex flex-col h-150 lg:h-full">
-          <AsmEditor 
-            rows={rows}
-            onRowsChange={setRows}
-            isRunning={isRunning}
-            onTerminate={handleTerminate} />
-        </div>
-
-        {/* Right column — Trace Table + SimControls */}
-        <div className="flex flex-col gap-6">
-          <div>
-            <TraceTable columns={traceColumns} rows={traceRows} highlightCells={latestHighlight?.cells ?? []}/>
+          {/* Left column — Assembly Editor */}
+          <div className="flex flex-col min-h-150 lg:min-h-0">
+            <AsmEditor 
+              rows={rows}
+              onRowsChange={setRows}
+              isRunning={isRunning}
+              onTerminate={handleTerminate} />
           </div>
-          <div className="flex flex-col h-full">
-            <SimControls
-              inputValue={inputValue}
-              onInputChange={setInputValue}
-              onInputConfirm={handleInputConfirm}
-              flags={flags}
-              onRun={handleRun}
-              onStep={handleStep}
-              notation={notation}
-              highlightInput={latestHighlight?.input ?? false}
-              highlightFlags={latestHighlight?.flags ?? []}
-            />
-          </div>
-        </div>
 
-        {/* Bottom — CFG Graph */}
-        <AssemblyGraph rows={rows} currentRowId={currentRowId} vmFlags={vmState?.flags ?? null}/>
+          {/* Right column — Trace Table + SimControls */}
+          <div className="flex flex-col gap-6 min-h-0">
+            <div className="flex-1 min-h-25 overflow-hidden">
+              <TraceTable columns={traceColumns} rows={traceRows} highlightCells={latestHighlight?.cells ?? []} height="100%"/>
+            </div>
+            <div className="flex flex-col shrink-0">
+              <SimControls
+                inputValue={inputValue}
+                onInputChange={setInputValue}
+                onInputConfirm={handleInputConfirm}
+                flags={flags}
+                onRun={handleRun}
+                onStep={handleStep}
+                notation={notation}
+                highlightInput={latestHighlight?.input ?? false}
+                highlightFlags={latestHighlight?.flags ?? []}
+              />
+            </div>
+          </div>
+
+          {/* Bottom — CFG Graph */}
+          <AssemblyGraph rows={rows} currentRowId={currentRowId} vmFlags={vmState?.flags ?? null}/>
       </div>
     </main>
   );

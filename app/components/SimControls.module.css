@@ -17,7 +17,6 @@
   backdrop-filter: blur(8px);
   overflow: hidden;
   display: flex;
-  flex: 1;
   flex-direction: column;
   position: relative;
 }
