@@ -69,6 +69,7 @@
 
 /* Scrollable data area */
 .scrollBody {
+  max-height: 350px;
   overflow: auto;
   /* Custom scrollbar, consistent with the main page. */
   scrollbar-width: thin;

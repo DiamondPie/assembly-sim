@@ -272,7 +272,7 @@ export default function Page() {
           {/* Right column — Trace Table + SimControls */}
           <div className="flex flex-col gap-6 min-h-0">
             <div className="flex-1 min-h-25 overflow-hidden">
-              <TraceTable columns={traceColumns} rows={traceRows} highlightCells={latestHighlight?.cells ?? []} />
+              <TraceTable columns={traceColumns} rows={traceRows} highlightCells={latestHighlight?.cells ?? []} height='100%' />
             </div>
             <div className="flex flex-col shrink-0">
               <SimControls
