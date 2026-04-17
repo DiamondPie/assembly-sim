@@ -20,7 +20,6 @@ import {
 } from '@/app/AsmVM';
 import Footer from '@/app/components/Footer';
 
-// ── 初始示例程序（与 AsmEditor 内部 EXAMPLE_ROWS 一致）────────────────────
 let _rid = 0;
 const mk = (label, opcode, operand) => ({
   id: _rid++,
@@ -39,7 +38,7 @@ export default function Page() {
   const [prevProgram, setPrevProgram] = useState(null);
   const [autoRun, setAutoRun] = useState(false);
 
-  // 首次挂载：尝试从 URL ?p=<base64> 解码
+  // First mount: Attempt to decode from URL ?p=xxx
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const match = window.location.search.match(/[?&]p=([^&]+)/);
@@ -48,7 +47,7 @@ export default function Page() {
 
     const cleanUrl = () => {
       const params = new URLSearchParams(window.location.search);
-      // 移除 ?p 参数，避免刷新 / 二次编辑时覆盖用户修改
+      // Remove the ?p parameter to prevent user changes from being overwritten during refresh/secondary editing.
       params.delete('p');
       const newQuery = params.toString();
       const newUrl = window.location.pathname + (newQuery ? `?${newQuery}` : '');
@@ -75,16 +74,16 @@ export default function Page() {
     setRows(parsed.lines.map(p => mk(p.label, p.opcode, p.operand)));
     toast.success(`Loaded ${parsed.lines.length} lines from share link.`);
     cleanUrl();
-    // 只跑一次
+    // Only run once
   }, []);
 
-  // 每次 rows 变化都重新解析
+  // Re-parse every time rows change
   const program = useMemo(
     () => parse(rows.filter(r => !r.disabled)),
     [rows]
   );
 
-  // rows/program 变化 → 重置 VM（避免旧状态与新代码错位）
+  // rows/program change → Reset VM (to avoid misalignment between old state and new code)
   if (program !== prevProgram) {
     setPrevProgram(program);
     setVmState(null);
@@ -96,7 +95,7 @@ export default function Page() {
     const w = checkSyntax(rows);
     const count = Object.keys(w.cells).length;
 
-    // 全局警告（如缺 HALT）用 toast 逐条提示
+    // Global warnings (such as missing HALT) are displayed one by one using a toast.
     for (const msg of w.global) {
       toast.error(msg);
     }
@@ -112,7 +111,7 @@ export default function Page() {
     return true;
   }, [rows]);
 
-  // 懒初始化：第一次点 Run/Step 时才真正 createVM
+  // Lazy initialization: The VM is only actually created the first time you click Run/Step.
   const ensureVM = useCallback(
     () => vmState ?? createVM(program),
     [vmState, program]
@@ -121,7 +120,7 @@ export default function Page() {
   const handleStep = useCallback(() => {
     if (!guardSyntax()) return;
     let cur = ensureVM();
-    // 如果已经 halted 或 error → 重新创建 VM 从头开始
+    // If it has already halted or encountered an error → recreate the VM from scratch.
     if (cur.halted || cur.error) {
       cur = createVM(program);
     }
@@ -142,7 +141,7 @@ export default function Page() {
       cur = createVM(program);
     }
     setAutoRun(true);
-    // run() 会在遇到 IN / HALT / error 时自动停
+    // The run() function will automatically stop when it encounters IN, HALT, or error.
     setVmState(run(cur, program));
   }, [ensureVM, program, guardSyntax]);
 
@@ -152,7 +151,7 @@ export default function Page() {
       const n = parseInt(val, 10);
       let next = provideInput(vmState, isNaN(n) ? 0 : n);
 
-      // 如果是 Run 模式下被 IN 阻断的，注入后继续跑
+      // If it was blocked by IN in Run mode, it will continue running after injection.
       if (
         autoRun &&
         !next.halted &&
@@ -168,7 +167,7 @@ export default function Page() {
     [vmState, program, autoRun]
   );
 
-  // ── 派生：TraceTable 的列和行 ────────────────────────────────────────────
+  // ── Derivation: Columns and rows of TraceTable ────────────────────────────────────────────
   const traceColumns = useMemo(
     () => traceToTableColumns(program),
     [program]
@@ -182,13 +181,13 @@ export default function Page() {
     const handler = (e) => {
       const text = e.clipboardData?.getData('text') ?? '';
       const parsed = parseAsmText(text);
-      if (!parsed) return;                 // 不是汇编 → 让默认行为发生
+      if (!parsed) return;                 // Not assembly language → Make the default behavior occur
   
-      // e.target 是否落在编辑器某个单元格里
+      // Does e.target fall within a specific cell in the editor
       const cellEl = e.target?.closest?.('[data-asm-cell]');
   
       if (parsed.lines.length > 1) {
-        // —— 多行 —— 全局生效
+        // — Multiple lines — Apply globally
         e.preventDefault();
         if (isEditorEmpty(rows)) {
           setRows(parsed.lines.map(p => mk(p.label, p.opcode, p.operand)));
@@ -197,7 +196,7 @@ export default function Page() {
           toast.error('Editor is not empty. Please clear it before pasting a program.');
         }
       } else if (parsed.lines.length === 1 && cellEl) {
-        // —— 单行 —— 只在单元格内生效，整行覆盖当前行
+        // — Single Row — Only applies within the cell; the entire row overwrites the current row.
         e.preventDefault();
         const rowId = Number(cellEl.dataset.rowId);
         const p = parsed.lines[0];
@@ -205,17 +204,17 @@ export default function Page() {
           r.id === rowId ? { ...r, label: p.label, opcode: p.opcode, operand: p.operand } : r
         ));
       }
-      // 单行但不在单元格内 → 不动
+      // Single row but not within a cell → Do not move
     };
   
     document.addEventListener('paste', handler, true); // capture
     return () => document.removeEventListener('paste', handler, true);
   }, [rows]);
 
-  // ── 派生：SimControls 的 props ───────────────────────────────────────────
+  // ── Derived from: SimControls props ───────────────────────────────────────────
   const flags    = vmState?.flags ?? { GT: false, LT: false, EQ: false };
 
-  // 根据 VM 状态动态写 notation，给用户清晰反馈
+  // Dynamically write notations based on VM state to provide clear feedback to users.
   let notation = vmState?.currentNotation ?? '';
   if (vmState?.error) {
     notation = `⚠ ${vmState.error}`;
@@ -243,14 +242,14 @@ export default function Page() {
     setInputValue('');
   }, []);
 
-  // ── VM 状态变化时弹 toast ──
+  // ── A toast is displayed when the VM state changes. ──
   const prevVmRef = useRef(null);
   useEffect(() => {
     if (!vmState) { prevVmRef.current = null; return; }
     const prev = prevVmRef.current;
     prevVmRef.current = vmState;
 
-    // 出现新错误
+    // A new error has occurred
     if (vmState.error && vmState.error !== prev?.error) {
       toast.error(vmState.error, { duration: 5000 });
     }
@@ -258,7 +257,6 @@ export default function Page() {
 
   return (
     <main className="flex flex-col">
-      {/* 主内容区：精确占满一个视口高度，内部溢出隐藏 */}
       <div className="p-6 md:p-6 lg:h-dvh lg:min-h-125 lg:overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[95%] mx-auto h-full">
 

@@ -26,7 +26,7 @@ function JumpEdge({ sourceX, sourceY, targetX, targetY, data, style, label, labe
   const padding = 40; 
   const laneSpacing = 16;
   
-  // 1. 动态避障通道计算 (保持之前的鲁棒性逻辑)
+  // 1. Dynamic obstacle avoidance path calculation
   const minY = Math.min(sourceY, targetY);
   const maxY = Math.max(sourceY, targetY);
   const intersectingNodes = nodes.filter(n => {
@@ -39,9 +39,9 @@ function JumpEdge({ sourceX, sourceY, targetX, targetY, data, style, label, labe
   
   const bypassX = maxRight + padding + (data?.laneIndex ?? 0) * laneSpacing;
 
-  // 2. 核心修复：定义明确的出场和进场高度
-  const exitY = sourceY + 20;    // 从底部 Handle 向下延伸 20px
-  const entryY = targetY - 20;   // 从顶部 Handle 向上延伸 20px
+  // 2. Defines entry and exit heights
+  const exitY = sourceY + 20;    // Extend downwards 20px from the bottom handle.
+  const entryY = targetY - 20;   // Extend upwards by 20px from the top handle.
 
   const isRightTarget = data?.targetIsRight === true;
   const color = style?.stroke ?? 'var(--text-tertiary, #484f58)';
@@ -50,21 +50,20 @@ function JumpEdge({ sourceX, sourceY, targetX, targetY, data, style, label, labe
 
   const path = isRightTarget
     ? [
-      // A. 起点：源节点底部
+      // A. Starting point: Bottom of the source node
       `M ${sourceX} ${sourceY}`,
-      // B. 出场：先向下一点，再右转进通道
+      // B. Exit: First, go down a little, then turn right into the passage.
       `L ${sourceX} ${exitY - r}`,
       `Q ${sourceX} ${exitY} ${sourceX + r} ${exitY}`,
       `L ${bypassX - r} ${exitY}`,
       `Q ${bypassX} ${exitY} ${bypassX} ${exitY - r}`,
-      // C. 垂直段：向上走到目标节点的高度
+      // C. Vertical segment: The height at which you ascend to the target node.
       `L ${bypassX} ${targetY + r}`,
-      // D. 进场：右转，水平向左进入右侧 handle
+      // D. Entry: Turn right, then horizontally to the left to enter the right-side handle.
       `Q ${bypassX} ${targetY} ${bypassX - r} ${targetY}`,
       `L ${targetX} ${targetY}`,
     ].join(' ')
     : [
-      // 原有顶部 handle 逻辑（保持不变）
       `M ${sourceX} ${sourceY}`,
       `L ${sourceX} ${exitY - r}`,
       `Q ${sourceX} ${exitY} ${sourceX + r} ${exitY}`,
@@ -225,7 +224,7 @@ function blocksToGraph(blocks, currentRowId, vmFlags) {
     }
   }
 
-  // 追踪每个节点的出/入边计数，用于分配 handle id
+  // Track the inbound/outbound edge count for each node, used to assign handle IDs.
   const sourceCount = {};
   const targetCount = {};
 
@@ -267,7 +266,7 @@ function blocksToGraph(blocks, currentRowId, vmFlags) {
 
   // Calculate y positions based on instruction count
   let yOffset = 0;
-  let currentXOffset = NODE_X; // 初始 X 位置为 0
+  let currentXOffset = NODE_X; // The initial X position is 0.
 
   const nodes = blocks.map((block) => {
     const instrCount = block.instructions.length;
@@ -293,24 +292,24 @@ function blocksToGraph(blocks, currentRowId, vmFlags) {
     return node;
   });
 
-  // 第一遍：优先处理所有顺序连线，确保它们抢占 tgt-1 和 src-1
+  // First pass: Prioritize processing all sequential connections, ensuring they preempt tgt-1 and src-1.
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i];
     const nextId = i + 1 < blocks.length ? blocks[i + 1].id : null;
     const isUnconditional = block.jumpTarget && block.jumpOp === 'JUMP';
 
-    // 只要不是强制停机且有下一个节点，就生成顺序线
+    // As long as it's not a forced shutdown and there's a next node, generate a sequence line.
     if (!block.isHalt && !isUnconditional && nextId) {
       addEdge(block.id, nextId, '', 'sequential');
     }
   }
-  // 第二遍：处理跳转连线，它们将自动获得 tgt-2, tgt-3... 等靠右的句柄
+  // Second pass: Processing jump connections, they will automatically obtain right-aligned handles such as tgt-2, tgt-3...
   for (const block of blocks) {
     if (block.jumpTarget) {
       const resolvedTarget = labelMap[block.jumpTarget] ?? null;
       if (resolvedTarget) {
         const targetBlock = blocks.find(b => b.id === resolvedTarget);
-        const targetIsRight = targetBlock?.isEntry === true;   // 入口节点用右侧 handle
+        const targetIsRight = targetBlock?.isEntry === true;   // The entry node uses the right-hand handle
         addEdge(block.id, resolvedTarget, block.jumpOp, 'jump', targetIsRight);
       }
     }
@@ -327,7 +326,7 @@ function blocksToGraph(blocks, currentRowId, vmFlags) {
     node.data.hasIncomingJump = jumpTargetIds.has(node.id);
   }
 
-  // ── 激活当前执行到的跳转线 ──────────────────────────
+  // ── Activate the currently executed jump line ──────────────────────────
   for (const block of blocks) {
     const lastInstr = block.instructions[block.instructions.length - 1];
     if (lastInstr?.id !== currentRowId || !block.jumpTarget) continue;
@@ -444,9 +443,9 @@ function AutoFitView({ nodeCount }) {
   const prevCount = useRef(0);
 
   useEffect(() => {
-    // 从 0 个节点变为有节点时（开始写第一条指令），或节点数量变化时
+    // When the number of nodes changes from 0 to 1 (when the first instruction is written), or when the number of nodes changes.
     if (nodeCount > 0 && (prevCount.current === 0 || nodeCount !== prevCount.current)) {
-      // 给一点延迟让 ReactFlow 完成布局测量
+      // Give ReactFlow a slight delay to complete the layout measurement.
       const t = setTimeout(() => fitView({ padding: 0.3, duration: 250 }), 50);
       prevCount.current = nodeCount;
       return () => clearTimeout(t);

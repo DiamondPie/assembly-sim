@@ -82,8 +82,8 @@ export const VALID_OPCODES = new Set([
 ]);
 
 /**
- * 返回 { [rowId]: { label?, opcode?, operand? } }，值为该单元格的警告文字。
- * 只对未禁用且非空的行做检查。
+  * Returns { [rowId]: { label?, opcode?, operand? } }, where the value is the warning text for that cell.
+  * Only checks rows that are not disabled and are not empty.
  */
 export function checkSyntax(rows) {
   const labels = new Set();
@@ -98,7 +98,7 @@ export function checkSyntax(rows) {
     else                    labels.add(label);
   }
 
-  // ── 检测重复 label ──
+  // Detect duplicate labels 
   const labelCount = {};   // labelName → [rowId, rowId, ...]
   for (const r of rows) {
     if (r.disabled) continue;
@@ -129,17 +129,17 @@ export function checkSyntax(rows) {
       w.label = `Duplicate label "${name}". Each label must be unique.`;
     }
 
-    // —— opcode 校验 ——
+    // opcode verification
     if (!opcode) {
       w.opcode = 'Missing opcode. Each non-blank line must specify an instruction.';
     } else if (!VALID_OPCODES.has(opcode)) {
       w.opcode = `Unknown opcode "${opcode}". Allowed: LOAD, STORE, CLEAR, ADD, SUBTRACT, INCREMENT, DECREMENT, COMPARE, JUMP, JUMPGT, JUMPEQ, JUMPLT, JUMPNEQ, IN, OUT, HALT, .DATA.`;
     }
 
-    // —— operand 校验 ——
+    // operand verification
     if (opcode && VALID_OPCODES.has(opcode)) {
       if (NO_OPERAND_OPS.has(opcode)) {
-        // HALT 不需要 operand
+        // HALT doesn't need a operand
       } else if (opcode === '.DATA') {
         if (!label) {
           w.label = '.DATA must have a label (the variable name).';
@@ -161,7 +161,7 @@ export function checkSyntax(rows) {
     if (Object.keys(w).length) warnings[r.id] = w;
   }
   
-  // ── 全局检查 ──
+  // global check
   const globalWarnings = [];
   const hasHalt = rows.some(r =>
     !r.disabled && r.opcode.trim().toUpperCase() === 'HALT'
@@ -306,7 +306,7 @@ function snapshotMemory(memory) {
 
 function computeHighlight(opcode, operand, prevState, next) {
   const h = { cells: [], input: false, flags: [] };
-  // JUMP 系：pc 不等于 prevPC+1 说明跳转生效
+  // JUMP series: pc is not equal to prevPC+1 indicates that the jump is effective.
   const jumpTaken = !next.error && next.pc !== prevState.pc + 1;
 
   switch (opcode) {
@@ -338,7 +338,7 @@ function computeHighlight(opcode, operand, prevState, next) {
     case 'IN':
       h.input = true;
       break;
-    // OUT / HALT → 不高亮
+    // OUT / HALT → not highlighted
   }
   return h;
 }
@@ -586,7 +586,7 @@ export function traceToTableColumns(program) {
   ];
 }
 
-/** 把一行文本解析成 { label, opcode, operand }，不能解析返回 null */
+/** Parse a line of text into {label, opcode, operand}. Return null if parsing fails. */
 export function parseAsmLine(line) {
   let cleaned = line.trim().replace(/[\u200B-\u200D\uFEFF]/g, '');
   cleaned = cleaned.replace(/[\t\u00A0\u3000]/g, ' ');
@@ -599,12 +599,12 @@ export function parseAsmLine(line) {
   let label = '', opcode = '', operand = '';
   let i = 0;
 
-  // 第一个 token 含 ":" → 视为 label
+  // The first token containing ":" is considered a label.
   if (tokens[0].endsWith(':')) {
     label = tokens[0];
     i++;
   } else if (tokens[0].includes(':')) {
-    // 形如 "START:LOAD" 的紧贴写法
+    // A close-fitting format like "START:LOAD"
     const idx = tokens[0].indexOf(':');
     label = tokens[0].slice(0, idx + 1);
     const rest = tokens[0].slice(idx + 1);
@@ -617,7 +617,9 @@ export function parseAsmLine(line) {
   return { label, opcode, operand };
 }
 
-/** 解析整段文本；只有当至少 1 行能解析、且每个解析出的 opcode 都在白名单内才返回结果 */
+/** Parse the entire text; 
+ * return a result only if at least one line can be parsed and each parsed opcode is within the whitelist. 
+ */
 export function parseAsmText(text) {
   if (!text || typeof text !== 'string') return null;
   const rawLines = text.split(/\r?\n/);
@@ -630,14 +632,14 @@ export function parseAsmText(text) {
     const p = parseAsmLine(ln);
     if (!p) continue;
     if (p.opcode === '.BEGIN' || p.opcode === '.END') continue; 
-    if (!VALID_OPCODES.has(p.opcode)) return null;  // 严格：未知 opcode → 整体不算汇编
+    if (!VALID_OPCODES.has(p.opcode)) return null;  // Strict: Unknown opcode → Not considered assembly code overall.
     parsed.push(p);
   }
   if (parsed.length === 0) return null;
   return { lines: parsed };
 }
 
-/** 编辑器是否为空 */
+/** Check is the editor is empty */
 export function isEditorEmpty(rows) {
   if (!rows || rows.length === 0) return true;
   return rows.every(r =>
@@ -645,7 +647,7 @@ export function isEditorEmpty(rows) {
   );
 }
 
-/** 把汇编 rows 序列化为纯文本（给分享链接/剪贴板用） */
+/** Serialize the assembly rows into plain text (for sharing links/clipboard use). */
 export function rowsToText(rows) {
   return rows
     .filter(r => r.label || r.opcode || r.operand)
@@ -658,16 +660,16 @@ export function rowsToText(rows) {
     .join('\n');
 }
 
-/** 压缩并 URL-safe 编码。返回可直接用作查询参数的字符串。 */
+/** Compress and URL-safely encode. Returns a string that can be directly used as a query parameter. */
 export function encodeProgram(text) {
   return LZString.compressToEncodedURIComponent(text);
 }
 
-/** 解码并解压。失败返回 null。 */
+/** Decode and decompress. Return null on failure. */
 export function decodeProgram(encoded) {
   try {
     const text = LZString.decompressFromEncodedURIComponent(encoded);
-    // 解压失败时，LZ-String 会返回 null 或空字符串
+    // If decompression fails, LZ-String will return null or an empty string.
     if (!text) return null;
     return text;
   } catch {
@@ -675,7 +677,7 @@ export function decodeProgram(encoded) {
   }
 }
 
-/** 紧凑序列化：单空格分隔，只保留必要字段（给分享链接用） */
+/** Compact serialization: single-space delimiter, retaining only necessary fields (for sharing links). */
 export function rowsToCompactText(rows) {
   return rows
     .filter(r => r.label || r.opcode || r.operand)

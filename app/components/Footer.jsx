@@ -16,8 +16,6 @@ export default function Footer() {
       </Link> course.
     </div>
     <div className='flex flex-col md:flex-row justify-center pb-4 min-h-12 items-center text-gray-500 gap-2 md:gap-0'>
-  
-      {/* 将 "Made by Logo" 包裹在一起防止断开 */}
       <div className="flex items-center">
         <span>Made by</span>
         <div className="relative w-32 h-10 mx-2">
@@ -27,10 +25,9 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* 在手机端隐藏那个小圆点分隔符，大屏再显示 */}
+      {/* Hide the small dot separator on mobile devices */}
       <div className="hidden md:block mx-3 h-1 w-1 rounded-full bg-gray-400" aria-hidden="true" />
 
-      {/* GitHub 部分 */}
       <div className="flex items-center">
         <span className="mr-1.5">Open-sourced at</span>
         <Link 

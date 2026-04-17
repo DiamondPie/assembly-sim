@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './AsmEditor.module.css';
-import { checkSyntax, isEditorEmpty, rowsToText, rowsToCompactText, encodeProgram } from '@/app/AsmVM';   // 路径按你的项目调整
+import { checkSyntax, isEditorEmpty, rowsToText, rowsToCompactText, encodeProgram } from '@/app/AsmVM';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 
@@ -63,12 +63,12 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
     if (!tooltip) return;
     const stillWarn = warnings[tooltip.rowId]?.[tooltip.col];
     if (!stillWarn) {
-      setTooltip(null);          // 警告已修复 → 立即收起
+      setTooltip(null);          // Warning fixed → Collapse now
     } else if (stillWarn !== tooltip.message) {
-      setTooltip(t => ({ ...t, message: stillWarn })); // 警告变化 → 更新文字
+      setTooltip(t => ({ ...t, message: stillWarn })); // Warning of changes → Update text
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [warnings]);  // 故意不依赖 tooltip，避免循环
+  }, [warnings]);  // Intentionally avoids relying on tooltips to prevent loops.
 
   const showTooltip = (e, rowId, col, message) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -82,7 +82,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
 
   const setRows = (updater) => {
     if (isControlled) {
-      // updater 可能是函数也可能是直接值
+      // The updater can be a function or a direct value.
       const next = typeof updater === 'function' ? updater(rows) : updater;
       onRowsChange?.(next);
     } else {
@@ -156,7 +156,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
     const atStart = caret === 0 && caretEnd === 0;
     const atEnd   = caret === value.length && caretEnd === value.length;
   
-    // ── Enter：在当前行下方插入新行，焦点到 opcode ──
+    // ── Enter: Inserts a new line below the current line, and focuses on the opcode. ──
     if (e.key === 'Enter') {
       e.preventDefault();
       const newRow = makeRow();
@@ -171,7 +171,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
       return;
     }
   
-    // ── Tab：保留原行为 ──
+    // ── Tab: Preserve original behavior ──
     if (e.key === 'Tab') {
       e.preventDefault();
       const dir = e.shiftKey ? -1 : 1;
@@ -192,14 +192,14 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
       return;
     }
   
-    // ── Alt+Backspace / Alt+Delete：保留原"删除整行" ──
+    // ── Alt+Backspace / Alt+Delete: Delete entire line ──
     if ((e.key === 'Backspace' || e.key === 'Delete') && e.altKey) {
       e.preventDefault();
       deleteRow(id);
       return;
     }
   
-    // ── Backspace（无修饰键，且单元格为空）── 
+    // ── Backspace ── 
     if (e.key === 'Backspace' && value === '') {
       if (col === 'opcode' || col === 'operand') {
         e.preventDefault();
@@ -216,11 +216,11 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
           moveCursorToEnd(prevId, 'operand');
           return;
         }
-        // 不为空 → 不做事（默认 Backspace 在空字符串本就无害）
+        // Not empty → Do nothing (by default, backspace is harmless in an empty string).
       }
     }
   
-    // ── Space：智能跳列 ──
+    // ── Space: Smart Skip Column ──
     if (e.key === ' ' && (col === 'label' || col === 'opcode')) {
       const hasContent = value.length > 0;
       const rightCol   = col === 'label' ? 'opcode' : 'operand';
@@ -232,7 +232,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
       }
     }
   
-    // ── ArrowLeft：在内容最左侧 → 跳到左侧单元格末尾 ──
+    // ── ArrowLeft: At the far left of the content → Jump to the end of the leftmost cell. ──
     if (e.key === 'ArrowLeft' && atStart) {
       if (col === 'opcode' || col === 'operand') {
         e.preventDefault();
@@ -246,7 +246,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
       }
     }
   
-    // ── ArrowRight：在内容最右侧 → 跳到右侧单元格开头 ──
+    // ── ArrowRight: Located on the far right of the content → Jump to the beginning of the cell on the right. ──
     if (e.key === 'ArrowRight' && atEnd) {
       if (col === 'label' || col === 'opcode') {
         e.preventDefault();
@@ -260,14 +260,14 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
       }
     }
 
-    // ── ArrowUp：跳到上一行同列末尾 ──
+    // ── ArrowUp: Jumps to the end of the previous column. ──
     if (e.key === 'ArrowUp' && rowIdx > 0) {
       e.preventDefault();
       moveCursorToEnd(rows[rowIdx - 1].id, col);
       return;
     }
 
-    // ── ArrowDown：跳到下一行同列末尾 ──
+    // ── ArrowDown: Jumps to the end of the next line in the same column. ──
     if (e.key === 'ArrowDown' && rowIdx < rows.length - 1) {
       e.preventDefault();
       moveCursorToEnd(rows[rowIdx + 1].id, col);
@@ -275,7 +275,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
     }
   };
 
-  // 点击外部 / Esc 关闭下拉
+  // Click the external / Esc button to close the dropdown.
   useEffect(() => {
     if (!exportOpen) return;
     const onClick = (e) => {
@@ -466,24 +466,24 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
                   onFocus={() => setFocusedId(row.id)}
                   onBlur={() => {
                     setFocusedId(null);
-                    // 兜底：失焦时若非空且无尾冒号 → 补上（覆盖粘贴等异常入口）
+                    // Backup: If the image is out of focus and is not empty and has no trailing colon, add it (for abnormal entries such as overwrite or paste).
                     const v = row.label.trim();
                     if (v && !v.endsWith(':')) updateCell(row.id, 'label', v + ':');
                   }}
                   onChange={e => {
                     const newVal = e.target.value;
                     const oldVal = row.label;
-                    // 删除方向（length 不增）：原样接受，但孤立的 ":" 收敛为 ""
+                    // Deletion direction (length does not increase): Accepts as is, but isolated ":" characters converge to "".
                     if (newVal.length <= oldVal.length) {
                       updateCell(row.id, 'label', newVal === ':' ? '' : newVal);
                       return;
                     }
-                    // 输入方向（length 增加）
+                    // Input direction (length increases)
                     if (newVal === '' || newVal.endsWith(':')) {
                       updateCell(row.id, 'label', newVal);
                       return;
                     }
-                    // 缺冒号 → 补上，并把光标放回冒号前
+                    // Missing colon → Add it and place the cursor before the colon.
                     const cursorPos = e.target.selectionStart ?? newVal.length;
                     updateCell(row.id, 'label', newVal + ':');
                     setTimeout(() => {

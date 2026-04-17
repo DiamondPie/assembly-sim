@@ -56,22 +56,21 @@
   z-index: 0;
 }
 
-/* 表头行：用 grid 排列，不参与滚动 */
+/* Header row: Arranged using grid, does not participate in scrolling. */
 .headerRow {
   display: grid;
-  width: max-content; /* 确保宽度撑开到 tableWidth */
-  background: #161b22; /* 必须给一个非透明背景，否则滚动时内容会透出来 */
+  width: max-content; 
+  background: #161b22;
   border-bottom: 1px solid var(--border-color-1, #ffffff14);
-  /* background: rgba(255, 255, 255, 0.03); */
-  position: sticky;    /* 核心修改 */
-  top: 0;             /* 粘在顶部 */
-  z-index: 10;        /* 确保在数据行之上 */
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-/* 可滚动的数据区域 */
+/* Scrollable data area */
 .scrollBody {
   overflow: auto;
-  /* 自定义滚动条，与主页面一致 */
+  /* Custom scrollbar, consistent with the main page. */
   scrollbar-width: thin;
   scrollbar-color: var(--text-tertiary, #484f58) transparent;
 }
@@ -80,7 +79,7 @@
 .scrollBody::-webkit-scrollbar-track { background: transparent; }
 .scrollBody::-webkit-scrollbar-thumb { background: var(--text-tertiary, #484f58); border-radius: 999px; }
 
-/* 每一行数据：用 grid 排列 */
+/* Each row of data: arranged using a grid */
 .bodyRow {
   display: grid;
   border-bottom: 1px solid var(--border-color-1, #ffffff14);
@@ -100,7 +99,7 @@
   border-right: 1px solid var(--border-color-1, #ffffff14);
   position: relative;
   transition: background 0.15s ease, color 0.15s ease;
-  overflow: hidden;          /* 新增 */
+  overflow: hidden;
 }
 
 .cellText {
@@ -118,9 +117,9 @@
   border-radius: 0.6rem;
   background: var(--content-1, #ffffff0d);
   backdrop-filter: blur(8px);
-  overflow: hidden;    /* 必须设为 hidden，否则圆角会被内部内容顶破 */
+  overflow: hidden;    /* It must be set to hidden, otherwise the rounded corners will be pushed out by the internal content. */
   position: relative;
-  width: 100%;         /* 限制宽度 */
+  width: 100%;         /* Limit width */
 }
 
 .headerCell {

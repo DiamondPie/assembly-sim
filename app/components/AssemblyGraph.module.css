@@ -36,9 +36,7 @@
 
 /* ── Canvas container ─────────────────────────── */
 .canvas {
-  /* 核心修复：确保在手机端至少有 400px 高度 */
   min-height: 400px; 
-  /* 如果是在一个 flex 容器里，确保它占据剩余空间 */
   flex: 1; 
   
   height: 100%;
@@ -49,14 +47,14 @@
   position: relative;
 }
 
-/* 针对移动端的特定优化 */
+/* Specific optimizations for mobile devices */
 @media (max-width: 768px) {
   .canvas {
-    min-height: 500px; /* 手机端稍微给高一点，方便操作 */
+    min-height: 500px;
   }
   
   .node {
-    width: 180px; /* 手机端节点可以稍微窄一点，避免横向溢出 */
+    width: 180px;
   }
 }
 
