@@ -5,11 +5,13 @@ import "./globals.css";
 
 const googleSansCode = Google_Sans_Code({
   variable: "--font-geist-mono",
+  display: 'swap',
   subsets: ["latin"],
 });
 
 const firaCode = Fira_Code({
   variable: "--font-fira-code",
+  display: 'swap',
   subsets: ["latin"],
 });
 
