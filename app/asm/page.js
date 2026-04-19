@@ -9,8 +9,8 @@ import SimControls from '@/app/components/SimControls';
 import InstructionSet from '@/app/components/InstructionSet';
 import { checkSyntax, parseAsmText, isEditorEmpty, decodeProgram } from '@/app/AsmVM';
 import { useNextStep } from 'nextstepjs';
-import TourStartButton from '@/app/components/TourStartButton';
-import { PROGRAM_SIMPLE, PROGRAM_JUMP, getStepAdvance } from '@/app/Toursteps';
+import TourStartButton from '@/app/components/Tour/TourStartButton';
+import { PROGRAM_SIMPLE, PROGRAM_JUMP, getStepAdvance } from '@/app/constants/Toursteps';
 
 import {
   parse,

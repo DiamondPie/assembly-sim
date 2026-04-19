@@ -2,7 +2,7 @@
 
 import { NextStepProvider, NextStep } from 'nextstepjs';
 import TourCard from './TourCard';
-import tourSteps from '@/app/Toursteps';
+import tourSteps from '@/app/constants/Toursteps';
 
 // The fly-into-FAB animation is now triggered from inside TourCard
 // (see ./tourFlyAway.js), because it needs to fire *before* nextstepjs

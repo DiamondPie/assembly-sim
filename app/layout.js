@@ -2,7 +2,7 @@ import { Google_Sans_Code, Fira_Code, Google_Sans_Flex } from "next/font/google"
 import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from 'react-hot-toast';
 import "./globals.css";
-import TourProviders from '@/app/components/TourProviders';
+import TourProviders from '@/app/components/Tour/TourProviders';
 
 const googleSansCode = Google_Sans_Code({
   variable: "--font-geist-mono",
