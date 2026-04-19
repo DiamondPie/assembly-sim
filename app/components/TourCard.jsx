@@ -5,6 +5,10 @@ import clsx from 'clsx';
 
 // nextstepjs passes these props to any cardComponent:
 //   { step, currentStep, totalSteps, nextStep, prevStep, skipTour, arrow }
+//
+// Custom field we honour on `step`:
+//   step.advanceOn    — marks this step as "user-driven"; hides Next
+//   step.advanceHint  — prompt shown in place of Next
 export default function TourCard({
   step,
   currentStep,
@@ -16,6 +20,7 @@ export default function TourCard({
 }) {
   const isFirst = currentStep === 0;
   const isLast  = currentStep === totalSteps - 1;
+  const isInteractive = Boolean(step.advanceOn);
 
   return (
     <div className={styles.card}>
@@ -45,6 +50,16 @@ export default function TourCard({
 
       {/* ── Content ────────────────────────────────────── */}
       <div className={styles.content}>{step.content}</div>
+
+      {/* ── Interactive hint (replaces Next button) ───── */}
+      {isInteractive && (
+        <div className={styles.hint} role="status" aria-live="polite">
+          <span aria-hidden>&gt;</span>
+          <span className={styles.hintText}>
+            {step.advanceHint || 'Interact with the highlighted element to continue'}
+          </span>
+        </div>
+      )}
 
       {/* ── Progress dots ──────────────────────────────── */}
       <div className={styles.dotsRow} aria-hidden>
@@ -85,13 +100,17 @@ export default function TourCard({
               Back
             </button>
           )}
-          <button
-            type="button"
-            className={clsx(styles.btn, styles.btnPrimary)}
-            onClick={nextStep}
-          >
-            {isLast ? 'Finish' : 'Next'}
-          </button>
+          {/* Next is hidden on interactive steps — the user must drive the
+              tour forward by pressing the highlighted page control. */}
+          {!isInteractive && (
+            <button
+              type="button"
+              className={clsx(styles.btn, styles.btnPrimary)}
+              onClick={nextStep}
+            >
+              {isLast ? 'Finish' : 'Next'}
+            </button>
+          )}
         </div>
       </div>
 

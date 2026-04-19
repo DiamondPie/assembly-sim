@@ -172,7 +172,7 @@ export default function SimControls({
         <div className={styles.hDivider} />
 
         {/* ── Row 3: Notation display ── */}
-        <div className={styles.section}>
+        <div id="tour-notation-display" className={styles.section}>
           <span className={styles.sectionLabel}>Current instruction</span>
           <div className={clsx(styles.notationBox, !displayNote && styles.notationEmpty)}>
             {displayNote

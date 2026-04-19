@@ -10,7 +10,7 @@ import InstructionSet from '@/app/components/InstructionSet';
 import { checkSyntax, parseAsmText, isEditorEmpty, decodeProgram } from '@/app/AsmVM';
 import { useNextStep } from 'nextstepjs';
 import TourStartButton from '@/app/components/TourStartButton';
-import { PROGRAM_SIMPLE, PROGRAM_JUMP } from '@/app/Toursteps';
+import { PROGRAM_SIMPLE, PROGRAM_JUMP, getStepAdvance } from '@/app/Toursteps';
 
 import {
   parse,
@@ -42,7 +42,7 @@ export default function Page() {
   const [autoRun, setAutoRun] = useState(false);
 
   // ── Tour integration ─────────────────────────────────────────────────
-  const { currentStep, currentTour } = useNextStep();
+  const { currentStep, currentTour, setCurrentStep } = useNextStep();
 
   // When the tour reaches a "program injection" step, swap the editor
   // contents. Keeping this effect in page.js (instead of in tourSteps.js)
@@ -61,11 +61,36 @@ export default function Page() {
     if (currentStep === 1) {
       inject(PROGRAM_SIMPLE);
       toast.success('Loaded tour example: IN/INCREMENT/OUT', { duration: 2000 });
-    } else if (currentStep === 5) {
+    } else if (currentStep === 6) {
       inject(PROGRAM_JUMP);
       toast.success('Loaded tour example: branching program', { duration: 2000 });
     }
   }, [currentStep, currentTour]);
+
+  // ── Tour auto-advance ──────────────────────────────────────────────
+  // Tracks how many times the "advanceOn" button has been pressed
+  // within the current step. Reset whenever the step changes.
+  const tourClicksRef = useRef(0);
+  useEffect(() => { tourClicksRef.current = 0; }, [currentStep, currentTour]);
+
+  /**
+   * Called from handleRun / handleStep / handleInputConfirm / handleTerminate
+   * when their respective button is pressed. If the current tour step declared
+   * itself to be driven by that button, we bump the click counter and — once
+   * `clicksNeeded` is satisfied — advance to the next tour step after a small
+   * visual delay (feels natural, lets the user see the state change).
+   */
+  const tryTourAdvance = useCallback((buttonType) => {
+    if (currentTour !== 'mainTour') return;
+    const rule = getStepAdvance(currentStep);
+    if (!rule || rule.advanceOn !== buttonType) return;
+
+    tourClicksRef.current += 1;
+    if (tourClicksRef.current >= rule.clicksNeeded) {
+      // nextstepjs built-in: setCurrentStep(index, delayMs)
+      setCurrentStep(currentStep + 1, 550);
+    }
+  }, [currentTour, currentStep, setCurrentStep]);
 
   // First mount: Attempt to decode from URL ?p=xxx
   useEffect(() => {
@@ -161,7 +186,8 @@ export default function Page() {
 
     setAutoRun(false);
     setVmState(step(cur, program));
-  }, [ensureVM, program, guardSyntax]);
+    tryTourAdvance('step');
+  }, [ensureVM, program, guardSyntax, tryTourAdvance]);
 
   const handleRun = useCallback(() => {
     if (!guardSyntax()) return;
@@ -172,7 +198,8 @@ export default function Page() {
     setAutoRun(true);
     // The run() function will automatically stop when it encounters IN, HALT, or error.
     setVmState(run(cur, program));
-  }, [ensureVM, program, guardSyntax]);
+    tryTourAdvance('run');
+  }, [ensureVM, program, guardSyntax, tryTourAdvance]);
 
   const handleInputConfirm = useCallback(
     (val) => {
@@ -192,8 +219,9 @@ export default function Page() {
 
       setVmState(next);
       setInputValue('');
+      tryTourAdvance('input');
     },
-    [vmState, program, autoRun]
+    [vmState, program, autoRun, tryTourAdvance]
   );
 
   // ── Derivation: Columns and rows of TraceTable ────────────────────────────────────────────
@@ -269,7 +297,8 @@ export default function Page() {
     setVmState(null);
     setAutoRun(false);
     setInputValue('');
-  }, []);
+    tryTourAdvance('terminate');
+  }, [tryTourAdvance]);
 
   // ── A toast is displayed when the VM state changes. ──
   const prevVmRef = useRef(null);

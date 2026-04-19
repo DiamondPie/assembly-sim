@@ -4,9 +4,15 @@
 // Selectors target stable `id` attributes (not CSS-module classes,
 // which get hashed at build time).
 //
+// Interactive steps (the user drives the tour forward by pressing a
+// real UI button, not the tour card's Next) use these extra fields:
+//   advanceOn:    'run' | 'step' | 'input' | 'terminate'
+//   clicksNeeded: number   // default 1  — only relevant for 'step'
+//   advanceHint:  string   // shown in the card instead of the Next btn
+//
 // Step indices (0-based) referenced by page.js for program injection:
-//   1 → inject PROGRAM_SIMPLE    (after intro)
-//   5 → inject PROGRAM_JUMP      (for step-execution demo)
+//   1 → inject PROGRAM_SIMPLE
+//   5 → inject PROGRAM_JUMP
 // ---------------------------------------------------------------
 
 export const PROGRAM_SIMPLE = [
@@ -28,7 +34,7 @@ export const PROGRAM_JUMP = [
   { label: 'Y:',     opcode: '.DATA',     operand: '1'     },
 ];
 
-// Shared pointer styling — matches existing UI rounding / padding vibe.
+// Shared pointer styling
 const POINTER_DEFAULTS = {
   pointerPadding: 8,
   pointerRadius: 12,
@@ -76,35 +82,39 @@ const tourSteps = [
         side: 'right',
       },
 
-      // ── 2 ── Run ──────────────────────────────────────────────
+      // ── 2 ── Run (INTERACTIVE) ────────────────────────────────
       {
         ...POINTER_DEFAULTS,
         icon: '▶',
         title: 'Run the program',
         content: (
           <>
-            Click <b>Run</b> to execute the program to completion (or until it
-            needs input / hits an error). Try it now — then press <b>Next</b>.
+            Click <b>Run</b> to execute the program to completion — or, in
+            this case, until it stops for input.
           </>
         ),
         selector: '#tour-run-btn',
         side: 'top',
+        advanceOn: 'run',
+        advanceHint: 'Press Run to continue',
       },
 
-      // ── 3 ── Input ────────────────────────────────────────────
+      // ── 3 ── Input (INTERACTIVE) ──────────────────────────────
       {
         ...POINTER_DEFAULTS,
         icon: '⌨',
         title: 'Feeding the VM',
         content: (
           <>
-            When an <code>IN</code> instruction is reached, the VM pauses here.
-            Type a number (e.g. <code>5</code>) and press the checkmark or{' '}
-            <b>Enter</b> to supply the value.
+            The VM hit <code>IN X</code> and is now paused. Type a number
+            (e.g. <code>5</code>) and press the checkmark or <b>Enter</b> to
+            supply the value.
           </>
         ),
         selector: '#tour-input-section',
         side: 'top',
+        advanceOn: 'input',
+        advanceHint: 'Enter a number & confirm to continue',
       },
 
       // ── 4 ── Trace Table ──────────────────────────────────────
@@ -123,6 +133,20 @@ const tourSteps = [
         side: 'left',
       },
 
+      {
+        ...POINTER_DEFAULTS,
+        icon: '✨',
+        title: 'Explanation & Result',
+        content: (
+          <>
+            Here you can see what each instruction did during the program&apos;s execution, 
+            also, of course, the output at the end of the program.
+          </>
+        ),
+        selector: '#tour-notation-display',
+        side: 'top',
+      },
+
       // ── 5 ── Inject program with branching ────────────────────
       {
         ...POINTER_DEFAULTS,
@@ -139,7 +163,7 @@ const tourSteps = [
         side: 'right',
       },
 
-      // ── 6 ── Step (first pair) ────────────────────────────────
+      // ── 6 ── Step ×2 (INTERACTIVE) ────────────────────────────
       {
         ...POINTER_DEFAULTS,
         icon: '⏭',
@@ -147,12 +171,15 @@ const tourSteps = [
         content: (
           <>
             Instead of <b>Run</b>, click <b>Step</b> to execute{' '}
-            <i>one instruction at a time</i>. Click it <b>twice now</b> — that
+            <i>one instruction at a time</i>. Click it <b>twice</b> — that
             will execute <code>LOAD X</code> and <code>COMPARE Y</code>.
           </>
         ),
         selector: '#tour-step-btn',
         side: 'top',
+        advanceOn: 'step',
+        clicksNeeded: 2,
+        advanceHint: 'Press Step twice to continue',
       },
 
       // ── 7 ── Flags ────────────────────────────────────────────
@@ -171,7 +198,7 @@ const tourSteps = [
         side: 'top',
       },
 
-      // ── 8 ── Step once more ───────────────────────────────────
+      // ── 8 ── Step ×1 (INTERACTIVE) ────────────────────────────
       {
         ...POINTER_DEFAULTS,
         icon: '⏭',
@@ -185,6 +212,9 @@ const tourSteps = [
         ),
         selector: '#tour-step-btn',
         side: 'top',
+        advanceOn: 'step',
+        clicksNeeded: 1,
+        advanceHint: 'Press Step once to continue',
       },
 
       // ── 9 ── Assembly Graph ───────────────────────────────────
@@ -203,7 +233,7 @@ const tourSteps = [
         side: 'left',
       },
 
-      // ── 10 ── Terminate ───────────────────────────────────────
+      // ── 10 ── Terminate (INTERACTIVE) ─────────────────────────
       {
         ...POINTER_DEFAULTS,
         icon: '⏹',
@@ -217,6 +247,8 @@ const tourSteps = [
         ),
         selector: '#tour-terminate-btn',
         side: 'right',
+        advanceOn: 'terminate',
+        advanceHint: 'Press Terminate to continue',
       },
 
       // ── 11 ── Done ────────────────────────────────────────────
@@ -231,11 +263,21 @@ const tourSteps = [
             in the corner whenever you need a reference. Happy hacking!
           </>
         ),
-        // no selector → card renders centred at top of viewport
         side: 'bottom',
       },
     ],
   },
 ];
+
+// Convenience helper used by page.js for auto-advance logic.
+// Returns the interactive descriptor for the given step index, or null.
+export function getStepAdvance(stepIndex) {
+  const s = tourSteps[0].steps[stepIndex];
+  if (!s || !s.advanceOn) return null;
+  return {
+    advanceOn:    s.advanceOn,
+    clicksNeeded: s.clicksNeeded ?? 1,
+  };
+}
 
 export default tourSteps;
