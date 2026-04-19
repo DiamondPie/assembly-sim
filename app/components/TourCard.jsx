@@ -1,0 +1,102 @@
+'use client';
+
+import styles from './TourCard.module.css';
+import clsx from 'clsx';
+
+// nextstepjs passes these props to any cardComponent:
+//   { step, currentStep, totalSteps, nextStep, prevStep, skipTour, arrow }
+export default function TourCard({
+  step,
+  currentStep,
+  totalSteps,
+  nextStep,
+  prevStep,
+  skipTour,
+  arrow,
+}) {
+  const isFirst = currentStep === 0;
+  const isLast  = currentStep === totalSteps - 1;
+
+  return (
+    <div className={styles.card}>
+      {/* Subtle accent ring along the top edge */}
+      <span className={styles.accentRing} aria-hidden />
+
+      {/* ── Header ─────────────────────────────────────── */}
+      <div className={styles.header}>
+        <div className={styles.titleRow}>
+          {step.icon && <span className={styles.icon}>{step.icon}</span>}
+          <h3 className={styles.title}>{step.title}</h3>
+        </div>
+        <button
+          type="button"
+          className={styles.closeBtn}
+          onClick={skipTour}
+          aria-label="Close tour"
+          title="Close tour"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+               stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <line x1="2" y1="2" x2="10" y2="10" />
+            <line x1="10" y1="2" x2="2" y2="10" />
+          </svg>
+        </button>
+      </div>
+
+      {/* ── Content ────────────────────────────────────── */}
+      <div className={styles.content}>{step.content}</div>
+
+      {/* ── Progress dots ──────────────────────────────── */}
+      <div className={styles.dotsRow} aria-hidden>
+        {Array.from({ length: totalSteps }).map((_, i) => (
+          <span
+            key={i}
+            className={clsx(
+              styles.dot,
+              i === currentStep && styles.dotActive,
+              i  <  currentStep && styles.dotDone,
+            )}
+          />
+        ))}
+      </div>
+
+      {/* ── Footer ─────────────────────────────────────── */}
+      <div className={styles.footer}>
+        <span className={styles.counter}>
+          {currentStep + 1} <span className={styles.counterSep}>/</span> {totalSteps}
+        </span>
+
+        <div className={styles.actions}>
+          {step.showSkip && !isLast && (
+            <button
+              type="button"
+              className={clsx(styles.btn, styles.btnGhost)}
+              onClick={skipTour}
+            >
+              Skip
+            </button>
+          )}
+          {!isFirst && (
+            <button
+              type="button"
+              className={clsx(styles.btn, styles.btnSecondary)}
+              onClick={prevStep}
+            >
+              Back
+            </button>
+          )}
+          <button
+            type="button"
+            className={clsx(styles.btn, styles.btnPrimary)}
+            onClick={nextStep}
+          >
+            {isLast ? 'Finish' : 'Next'}
+          </button>
+        </div>
+      </div>
+
+      {/* nextstepjs arrow */}
+      {arrow}
+    </div>
+  );
+}

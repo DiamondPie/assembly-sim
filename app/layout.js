@@ -2,6 +2,7 @@ import { Google_Sans_Code, Fira_Code, Google_Sans_Flex } from "next/font/google"
 import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from 'react-hot-toast';
 import "./globals.css";
+import TourProviders from '@/app/components/TourProviders';
 
 const googleSansCode = Google_Sans_Code({
   variable: "--font-geist-mono",
@@ -32,7 +33,9 @@ export default function RootLayout({ children }) {
       className={`${googleSansCode.variable} ${firaCode.variable} ${googleSansFlex.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
+        <TourProviders>
+          {children}
+        </TourProviders>
         <Analytics />
         <Toaster
           position="bottom-left"

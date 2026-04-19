@@ -1,0 +1,66 @@
+/* ─────────────────────────────────────────────────────────────
+   TourStartButton.module.css
+   Small pill-style FAB, bottom-left, matches the platform's
+   dark-glass / purple aesthetic. Sits clear of the InstructionSet
+   FAB (which lives in the bottom-right).
+───────────────────────────────────────────────────────────── */
+
+.fab {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 40;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px 9px 12px;
+
+  border-radius: 999px;
+  border: 1px solid var(--border-color-1);
+  background: rgba(15, 15, 20, 0.78);
+  color: var(--text-primary);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(233, 160, 255, 0.06);
+
+  transition:
+    transform var(--transition-base),
+    background-color var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    color var(--transition-base);
+}
+
+.fab:hover {
+  background: rgba(22, 22, 30, 0.9);
+  border-color: rgba(233, 160, 255, 0.4);
+  color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(233, 160, 255, 0.18);
+}
+
+.fab:active {
+  transform: translateY(0);
+}
+
+.label {
+  line-height: 1;
+}
+
+/* Hide the label on very small screens — keep only the icon */
+@media (max-width: 480px) {
+  .fab { padding: 10px; }
+  .label { display: none; }
+}

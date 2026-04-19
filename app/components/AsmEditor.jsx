@@ -417,7 +417,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
         </div>
       </div>
 
-      <div className={styles.asmTableContainer}>
+      <div id="tour-asm-table" className={styles.asmTableContainer}>
         <div className={styles.asmHeader}>
           <div className={clsx(styles.asmHeaderCell, styles.asmHeaderCellCenter)}>Addr</div>
           <div className={clsx(styles.asmHeaderCell, styles.asmHeaderCellRight)}>Label</div>
@@ -554,6 +554,7 @@ export default function AsmEditor({ rows: externalRows, onRowsChange, isRunning 
 
         {isRunning ? (
           <button
+            id="tour-terminate-btn"
             className={clsx(styles.asmAddRow, styles.asmTerminateBtn)}
             onClick={onTerminate}
             title="Terminate the running program"

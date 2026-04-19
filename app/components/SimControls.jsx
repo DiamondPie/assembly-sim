@@ -88,7 +88,7 @@ export default function SimControls({
         <div className={styles.topRow}>
 
           {/* Input */}
-          <div className={styles.section}>
+          <div id="tour-input-section" className={styles.section}>
             <span className={styles.sectionLabel}>Input</span>
             <div className={styles.inputRow}>
               <input
@@ -117,7 +117,7 @@ export default function SimControls({
           <div className={styles.vDivider} />
 
           {/* Flags */}
-          <div className={styles.section}>
+          <div id="tour-flags-section" className={styles.section}>
             <span className={styles.sectionLabel}>Flags</span>
             <div className={styles.flagTable}>
               {/* Header row */}
@@ -150,6 +150,7 @@ export default function SimControls({
         <div className={styles.section}>
           <div className={styles.btnRow}>
             <button
+              id="tour-run-btn"
               className={clsx(styles.execBtn, styles.execBtnRun)}
               onClick={onRun}
             >
@@ -157,6 +158,7 @@ export default function SimControls({
               Run
             </button>
             <button
+              id="tour-step-btn"
               className={clsx(styles.execBtn, styles.execBtnStep)}
               onClick={onStep}
             >

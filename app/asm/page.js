@@ -8,6 +8,9 @@ import AssemblyGraph from '@/app/components/AssemblyGraph';
 import SimControls from '@/app/components/SimControls';
 import InstructionSet from '@/app/components/InstructionSet';
 import { checkSyntax, parseAsmText, isEditorEmpty, decodeProgram } from '@/app/AsmVM';
+import { useNextStep } from 'nextstepjs';
+import TourStartButton from '@/app/components/TourStartButton';
+import { PROGRAM_SIMPLE, PROGRAM_JUMP } from '@/app/Toursteps';
 
 import {
   parse,
@@ -37,6 +40,32 @@ export default function Page() {
   const [inputValue, setInputValue] = useState('');
   const [prevProgram, setPrevProgram] = useState(null);
   const [autoRun, setAutoRun] = useState(false);
+
+  // ── Tour integration ─────────────────────────────────────────────────
+  const { currentStep, currentTour } = useNextStep();
+
+  // When the tour reaches a "program injection" step, swap the editor
+  // contents. Keeping this effect in page.js (instead of in tourSteps.js)
+  // means the step definitions stay pure data and portable.
+  useEffect(() => {
+    if (currentTour !== 'mainTour') return;
+
+    const inject = (program) => {
+      setRows(program.map(p => mk(p.label, p.opcode, p.operand)));
+      // Reset VM so the new code runs from a clean slate
+      setVmState(null);
+      setInputValue('');
+      setAutoRun(false);
+    };
+
+    if (currentStep === 1) {
+      inject(PROGRAM_SIMPLE);
+      toast.success('Loaded tour example: IN/INCREMENT/OUT', { duration: 2000 });
+    } else if (currentStep === 5) {
+      inject(PROGRAM_JUMP);
+      toast.success('Loaded tour example: branching program', { duration: 2000 });
+    }
+  }, [currentStep, currentTour]);
 
   // First mount: Attempt to decode from URL ?p=xxx
   useEffect(() => {
@@ -261,7 +290,7 @@ export default function Page() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[95%] mx-auto h-full">
 
           {/* Left column — Assembly Editor */}
-          <div className="flex flex-col min-h-150 lg:min-h-0">
+          <div id="tour-asm-editor" className="flex flex-col min-h-150 lg:min-h-0">
             <AsmEditor 
               rows={rows}
               onRowsChange={setRows}
@@ -271,7 +300,7 @@ export default function Page() {
 
           {/* Right column — Trace Table + SimControls */}
           <div className="flex flex-col gap-6 min-h-0">
-            <div className="flex-1 min-h-25 overflow-hidden">
+            <div id="tour-trace-table" className="flex-1 min-h-25 overflow-hidden">
               <TraceTable columns={traceColumns} rows={traceRows} highlightCells={latestHighlight?.cells ?? []} height='100%' />
             </div>
             <div className="flex flex-col shrink-0">
@@ -295,6 +324,7 @@ export default function Page() {
       </div>
 
       <Footer />
+      <TourStartButton />
       <InstructionSet />
     </main>
   );

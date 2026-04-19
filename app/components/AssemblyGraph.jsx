@@ -473,7 +473,7 @@ export default function AssemblyGraph({ rows = [], currentRowId = null, vmFlags 
   const isEmpty = rows.filter(r => r.opcode.trim()).length === 0;
 
   return (
-    <div className={styles.root}>
+    <div id="tour-assembly-graph" className={styles.root}>
       <div className={styles.toolbar}>
         <span className={styles.title}>Assembly Graph</span>
         <span className={styles.badge}>{nodes.length} block{nodes.length !== 1 ? 's' : ''}</span>
