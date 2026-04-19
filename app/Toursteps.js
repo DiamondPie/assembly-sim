@@ -7,7 +7,7 @@
 // Interactive steps (the user drives the tour forward by pressing a
 // real UI button, not the tour card's Next) use these extra fields:
 //   advanceOn:    'run' | 'step' | 'input' | 'terminate'
-//   clicksNeeded: number   // default 1  — only relevant for 'step'
+//   clicksNeeded: number   // default 1  - only relevant for 'step'
 //   advanceHint:  string   // shown in the card instead of the Next btn
 //
 // Step indices (0-based) referenced by page.js for program injection:
@@ -40,7 +40,16 @@ const POINTER_DEFAULTS = {
   pointerRadius: 12,
   showControls: true,
   showSkip: true,
+  blockKeyboardControl: true,
 };
+
+// Check if using a mac system, and return the control key symbol
+function getControlKey() {
+  const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform) || 
+                /Macintosh/i.test(navigator.userAgent);
+  
+  return isMac ? '⌘' : 'Ctrl';
+}
 
 const tourSteps = [
   {
@@ -53,10 +62,12 @@ const tourSteps = [
         title: 'Welcome to the Playground',
         content: (
           <>
-            This is the <b>Assembly Editor</b>. You can write programs by hand
-            one row at a time, or paste a whole program from your clipboard —
-            just copy an assembly listing and hit <code>⌘/Ctrl + V</code> over
-            the editor.
+            This is the <b>Assembly Editor</b>. You can write programs from scratch, 
+            or paste a whole program from your clipboard -
+            just copy an assembly from Coderunner and hit <code>{getControlKey()} + V</code> over
+            the editor.<br/>
+            The <b>Addr</b> column is the program counter value.
+            If you click it, the following line will be disabled (commented).
           </>
         ),
         selector: '#tour-asm-editor',
@@ -67,15 +78,13 @@ const tourSteps = [
       {
         ...POINTER_DEFAULTS,
         icon: '📥',
-        title: 'Example program loaded',
+        title: 'Hello world',
         content: (
           <>
-            We just loaded a tiny program for you:
+            We just loaded a tiny program for you.
             <br />
-            <code>IN X → INCREMENT X → OUT X → HALT</code>.
-            <br />
-            Each row is one instruction. The <b>Addr</b> column is the program
-            counter value; click it to disable a line.
+            Each row is one instruction - hopefully you know what it does;
+            if not, go and check the instruction set on coursebook :P
           </>
         ),
         selector: '#tour-asm-table',
@@ -89,7 +98,7 @@ const tourSteps = [
         title: 'Run the program',
         content: (
           <>
-            Click <b>Run</b> to execute the program to completion — or, in
+            Click <b>Run</b> to execute the program to completion - or, in
             this case, until it stops for input.
           </>
         ),
@@ -107,8 +116,8 @@ const tourSteps = [
         content: (
           <>
             The VM hit <code>IN X</code> and is now paused. Type a number
-            (e.g. <code>5</code>) and press the checkmark or <b>Enter</b> to
-            supply the value.
+            (e.g. <code>5</code>) then press the checkmark or <b>Enter</b> to
+            input the value.
           </>
         ),
         selector: '#tour-input-section',
@@ -151,10 +160,10 @@ const tourSteps = [
       {
         ...POINTER_DEFAULTS,
         icon: '🔀',
-        title: 'A program with branching',
+        title: 'Getting upgraded',
         content: (
           <>
-            Let&apos;s try something richer — a program that uses{' '}
+            Let&apos;s try something richer - a program that uses{' '}
             <code>COMPARE</code> and <code>JUMPEQ</code> to decide what to do.
             Here X and Y are both 1, so the <code>EQ</code> flag will fire.
           </>
@@ -171,7 +180,7 @@ const tourSteps = [
         content: (
           <>
             Instead of <b>Run</b>, click <b>Step</b> to execute{' '}
-            <i>one instruction at a time</i>. Click it <b>twice</b> — that
+            <i>one instruction at a time</i>. Click it <b>twice</b> - that
             will execute <code>LOAD X</code> and <code>COMPARE Y</code>.
           </>
         ),
@@ -190,7 +199,7 @@ const tourSteps = [
         content: (
           <>
             <code>COMPARE Y</code> just set the <b>EQ</b> flag to 1 (because X
-            == Y). These flags drive conditional jumps — try comparing other
+            == Y). These flags drive conditional jumps - try comparing other
             values later to see <b>GT</b> and <b>LT</b> light up.
           </>
         ),
@@ -202,12 +211,11 @@ const tourSteps = [
       {
         ...POINTER_DEFAULTS,
         icon: '⏭',
-        title: 'Take the jump',
+        title: '3, 2, 1, Jump!',
         content: (
           <>
             Click <b>Step</b> one more time. <code>JUMPEQ EQUAL</code> will
-            fire because the EQ flag is set, jumping execution straight to{' '}
-            <code>OUT X</code>.
+            fire because the EQ flag is set.
           </>
         ),
         selector: '#tour-step-btn',
@@ -220,13 +228,14 @@ const tourSteps = [
       // ── 9 ── Assembly Graph ───────────────────────────────────
       {
         ...POINTER_DEFAULTS,
-        icon: '🗺',
+        icon: '🚀',
         title: 'Control flow graph',
         content: (
           <>
-            The graph visualises the program as basic blocks connected by
-            jumps. The highlighted block shows where execution currently lives
-            — watch it move as you step through.
+            The graph visualises the program as basic blocks. 
+            The highlighted instruction shows where execution currently lives.
+            Also, the pathway which is <b>going to</b> will be marked
+            - watch it move as you step through!
           </>
         ),
         selector: '#tour-assembly-graph',
@@ -237,7 +246,7 @@ const tourSteps = [
       {
         ...POINTER_DEFAULTS,
         icon: '⏹',
-        title: 'Stop execution',
+        title: 'You revoked a message',
         content: (
           <>
             While a program is mid-run, this button becomes a <b>Terminate</b>{' '}

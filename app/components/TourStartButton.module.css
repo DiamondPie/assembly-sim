@@ -1,8 +1,10 @@
 /* ─────────────────────────────────────────────────────────────
    TourStartButton.module.css
-   Small pill-style FAB, bottom-left, matches the platform's
-   dark-glass / purple aesthetic. Sits clear of the InstructionSet
-   FAB (which lives in the bottom-right).
+   Collapsed (desktop): a compact circular "?" FAB.
+   On hover:            the button grows to the right and reveals
+                        a "Tour" label — no layout reflow because
+                        it's position:fixed.
+   Mobile (<= 480px):   keep the compact circle; tap = start tour.
 ───────────────────────────────────────────────────────────── */
 
 .fab {
@@ -11,14 +13,19 @@
   bottom: 20px;
   z-index: 40;
 
+  /* Collapsed shape: perfect circle */
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 14px 9px 12px;
+  justify-content: flex-start;   /* icon stays pinned to the left edge */
+  overflow: hidden;              /* clips the label when collapsed */
 
   border-radius: 999px;
   border: 1px solid var(--border-color-1);
-  background: rgba(15, 15, 20, 0.78);
+  background: rgba(15, 15, 20, 0.82);
   color: var(--text-primary);
   font-family: var(--font-sans, system-ui, sans-serif);
   font-size: 12px;
@@ -34,33 +41,78 @@
     0 0 0 1px rgba(233, 160, 255, 0.06);
 
   transition:
-    transform var(--transition-base),
+    width        var(--transition-base),
+    padding      var(--transition-base),
     background-color var(--transition-base),
-    border-color var(--transition-base),
-    box-shadow var(--transition-base),
-    color var(--transition-base);
+    border-color     var(--transition-base),
+    color            var(--transition-base),
+    box-shadow       var(--transition-base),
+    transform        var(--transition-base);
 }
 
-.fab:hover {
-  background: rgba(22, 22, 30, 0.9);
+/* ── Icon is always visible, fixed width so it never shifts ── */
+.icon {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Label is collapsed (width:0, faded) by default ── */
+.label {
+  display: inline-block;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  padding-right: 0;
+  transform: translateX(-4px);
+  line-height: 1;
+  transition:
+    max-width    var(--transition-base),
+    opacity      var(--transition-base),
+    padding      var(--transition-base),
+    transform    var(--transition-base);
+}
+
+/* ── Hover: expand the pill, slide the label in ── */
+.fab:hover,
+.fab:focus-visible {
+  width: 92px;
+  background: rgba(22, 22, 30, 0.92);
   border-color: rgba(233, 160, 255, 0.4);
   color: var(--accent-primary);
   transform: translateY(-1px);
   box-shadow:
     0 12px 32px rgba(0, 0, 0, 0.55),
     0 0 20px rgba(233, 160, 255, 0.18);
+  outline: none;
+}
+
+.fab:hover .label,
+.fab:focus-visible .label {
+  max-width: 50px;
+  opacity: 1;
+  padding-right: 14px;
+  transform: translateX(0);
 }
 
 .fab:active {
   transform: translateY(0);
 }
 
-.label {
-  line-height: 1;
-}
-
-/* Hide the label on very small screens — keep only the icon */
+/* ── Mobile: keep the circle, don't expand on touch ── */
 @media (max-width: 480px) {
-  .fab { padding: 10px; }
-  .label { display: none; }
+  .fab:hover,
+  .fab:focus-visible {
+    width: 40px;
+  }
+  .fab:hover .label,
+  .fab:focus-visible .label {
+    max-width: 0;
+    opacity: 0;
+    padding-right: 0;
+  }
 }

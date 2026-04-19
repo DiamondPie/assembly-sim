@@ -1,7 +1,9 @@
 'use client';
 
+import { useRef } from 'react';
 import styles from './TourCard.module.css';
 import clsx from 'clsx';
+import { flyCardIntoFab } from './TourFlyAway';
 
 // nextstepjs passes these props to any cardComponent:
 //   { step, currentStep, totalSteps, nextStep, prevStep, skipTour, arrow }
@@ -21,9 +23,21 @@ export default function TourCard({
   const isFirst = currentStep === 0;
   const isLast  = currentStep === totalSteps - 1;
   const isInteractive = Boolean(step.advanceOn);
+  const cardRef = useRef(null);
+
+  // Intercept the terminal actions so we can snapshot the card DOM
+  // *before* nextstepjs starts its exit animation.
+  const handleSkip = () => {
+    flyCardIntoFab(cardRef.current);
+    skipTour();
+  };
+  const handleFinish = () => {
+    flyCardIntoFab(cardRef.current);
+    nextStep();  // on the last step, nextStep() completes the tour
+  };
 
   return (
-    <div className={styles.card}>
+    <div ref={cardRef} className={styles.card} data-tour-card="true">
       {/* Subtle accent ring along the top edge */}
       <span className={styles.accentRing} aria-hidden />
 
@@ -36,7 +50,7 @@ export default function TourCard({
         <button
           type="button"
           className={styles.closeBtn}
-          onClick={skipTour}
+          onClick={handleSkip}
           aria-label="Close tour"
           title="Close tour"
         >
@@ -86,7 +100,7 @@ export default function TourCard({
             <button
               type="button"
               className={clsx(styles.btn, styles.btnGhost)}
-              onClick={skipTour}
+              onClick={handleSkip}
             >
               Skip
             </button>
@@ -106,7 +120,7 @@ export default function TourCard({
             <button
               type="button"
               className={clsx(styles.btn, styles.btnPrimary)}
-              onClick={nextStep}
+              onClick={isLast ? handleFinish : nextStep}
             >
               {isLast ? 'Finish' : 'Next'}
             </button>
