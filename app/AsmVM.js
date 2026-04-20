@@ -75,6 +75,7 @@ const JUMP_OPS = new Set(['JUMP','JUMPGT','JUMPEQ','JUMPLT','JUMPNEQ']);
 const DATA_REF_OPS = new Set([
   'LOAD','STORE','CLEAR','ADD','SUBTRACT','INCREMENT','DECREMENT','COMPARE','IN','OUT'
 ]);
+const R_WRITE_OPS = new Set(['LOAD', 'ADD', 'SUBTRACT']);
 export const VALID_OPCODES = new Set([
   'LOAD','STORE','CLEAR','ADD','SUBTRACT','INCREMENT','DECREMENT',
   'COMPARE','JUMP','JUMPGT','JUMPEQ','JUMPLT','JUMPNEQ',
@@ -564,8 +565,17 @@ export function run(state, program, maxSteps = 1000) {
 
 export function traceToTableRows(trace, program) {
   const varNames = [...program.dataMap.keys()];
+  let rAssigned = false;
+
   return trace.map(row => {
-    const out = { pc: row.pc, r: row.r };
+    if (R_WRITE_OPS.has(row.opcode)) {
+      rAssigned = true;
+    }
+
+    const out = {
+      pc: row.pc,
+      r:  rAssigned ? row.r : '-',
+    };
     for (const v of varNames) {
       out[v] = row.memory[v] ?? '—';
     }

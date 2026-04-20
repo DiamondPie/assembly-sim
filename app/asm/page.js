@@ -229,10 +229,25 @@ export default function Page() {
     () => traceToTableColumns(program),
     [program]
   );
-  const traceRows = useMemo(
-    () => (vmState ? traceToTableRows(vmState.trace, program) : []),
-    [vmState, program]
-  );
+  const traceRows = useMemo(() => {
+    const buildInitialRow = () => {
+      const row = { pc: '-', r: '-' };
+      for (const [varName, initVal] of program.dataMap) {
+        row[varName] = initVal;
+      }
+      return row;
+    };
+  
+    if (program.dataMap.size === 0 && program.instructions.length === 0) {
+      return [];
+    }
+  
+    if (!vmState) {
+      return [buildInitialRow()];
+    }
+  
+    return [buildInitialRow(), ...traceToTableRows(vmState.trace, program)];
+  }, [vmState, program]);
 
   useEffect(() => {
     const handler = (e) => {
