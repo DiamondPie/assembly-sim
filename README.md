@@ -5,7 +5,7 @@
 An interactive, web-based assembly language simulator designed to bridge the gap between abstract machine code and logical execution. Originally built as a learning aid for the UoA COMPSCI 110 course.
 
 [![MIT license](https://custom-icon-badges.demolab.com/github/license/denvercoder1/custom-icon-badges?logo=law)](https://lbesson.mit-license.org/)
-![](https://custom-icon-badges.demolab.com/github/last-commit/DiamondPie/assembly-sim?logo=history&logoColor=white)
+![](https://img.shields.io/github/last-commit/DiamondPie/assembly-sim)
 
 ## 🚀 Features
 
