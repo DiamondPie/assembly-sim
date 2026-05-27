@@ -2,15 +2,15 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import AsmEditor from '@/app/components/AsmEditor';
-import TraceTable from '@/app/components/TraceTable';
-import AssemblyGraph from '@/app/components/AssemblyGraph';
-import SimControls from '@/app/components/SimControls';
-import InstructionSet from '@/app/components/InstructionSet';
-import { checkSyntax, parseAsmText, isEditorEmpty, decodeProgram } from '@/app/AsmVM';
+import AsmEditor from '@/features/asm/components/AsmEditor';
+import TraceTable from '@/features/asm/components/TraceTable';
+import AssemblyGraph from '@/features/asm/components/AssemblyGraph';
+import SimControls from '@/features/asm/components/SimControls';
+import InstructionSet from '@/features/asm/components/InstructionSet';
+import { checkSyntax, parseAsmText, isEditorEmpty, decodeProgram } from '@/features/asm/AsmVM';
 import { useNextStep } from 'nextstepjs';
-import TourStartButton from '@/app/components/Tour/TourStartButton';
-import { PROGRAM_SIMPLE, PROGRAM_JUMP, getStepAdvance } from '@/app/constants/Toursteps';
+import TourStartButton from '@/features/asm/components/Tour/TourStartButton';
+import { PROGRAM_SIMPLE, PROGRAM_JUMP, getStepAdvance } from '@/constants/Toursteps';
 
 import {
   parse,
@@ -20,8 +20,8 @@ import {
   provideInput,
   traceToTableRows,
   traceToTableColumns,
-} from '@/app/AsmVM';
-import Footer from '@/app/components/Footer';
+} from '@/features/asm/AsmVM';
+import Footer from '@/features/asm/components/Footer';
 
 let _rid = 0;
 const mk = (label, opcode, operand) => ({

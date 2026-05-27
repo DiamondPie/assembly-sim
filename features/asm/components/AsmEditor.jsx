@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './AsmEditor.module.css';
-import { checkSyntax, isEditorEmpty, rowsToText, rowsToCompactText, encodeProgram } from '@/app/AsmVM';
+import { checkSyntax, isEditorEmpty, rowsToText, rowsToCompactText, encodeProgram } from '@/features/asm/AsmVM';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 
