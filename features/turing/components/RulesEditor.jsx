@@ -1,277 +1,259 @@
 "use client";
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import styles from './RulesEditor.module.css';
 
-const MOVE_OPTIONS = ['L', 'R', 'S'];
+const MOVE_OPTIONS = ['L', 'R'];
 
-// A canonical "binary increment" example, useful as a sanity check.
+let uidCounter = 0;
+const uid = () => `r${Date.now().toString(36)}${(uidCounter++).toString(36)}`;
+
+export function makeEmptyRule() {
+  return {
+    id: uid(),
+    currentState: '',
+    read: '',
+    write: '',
+    nextState: '',
+    move: 'R',
+  };
+}
+
+// Flips every bit while scanning right, then halts on the first blank `b`
+// because no rule matches (state 1, read b).
 const EXAMPLE_RULES = [
-  { currentState: 'q0', read: '0', nextState: 'q0', write: '0', move: 'R' },
-  { currentState: 'q0', read: '1', nextState: 'q0', write: '1', move: 'R' },
-  { currentState: 'q0', read: '_', nextState: 'q1', write: '_', move: 'L' },
-  { currentState: 'q1', read: '0', nextState: 'qH', write: '1', move: 'S' },
-  { currentState: 'q1', read: '1', nextState: 'q1', write: '0', move: 'L' },
-  { currentState: 'q1', read: '_', nextState: 'qH', write: '1', move: 'S' },
+  { id: uid(), currentState: '1', read: '0', write: '1', nextState: '1', move: 'R' },
+  { id: uid(), currentState: '1', read: '1', write: '0', nextState: '1', move: 'R' },
 ];
-
-let __rid = 0;
-const nextId = () => ++__rid;
-
-export const makeEmptyRule = () => ({
-  id: nextId(),
-  currentState: '',
-  read: '',
-  nextState: '',
-  write: '',
-  move: 'R',
-});
-
-export const makeExampleRules = () =>
-  EXAMPLE_RULES.map((r) => ({ id: nextId(), ...r }));
 
 export default function RulesEditor({
   rules,
   onRulesChange,
   isRunning,
-  activeRuleId = null,
+  activeRuleId,
 }) {
-  const [exportOpen, setExportOpen] = useState(false);
-  const exportRef = useRef(null);
-
-  const stats = useMemo(() => {
-    const states = new Set();
-    rules.forEach((r) => {
-      if (r.currentState) states.add(r.currentState);
-      if (r.nextState) states.add(r.nextState);
-    });
-    const defined = rules.filter(
-      (r) => r.currentState && r.read && r.nextState && r.write
-    ).length;
-    return { states: states.size, defined };
+  // A rule is "complete enough" to take part in conflict detection once it has
+  // both a current state and a read symbol.
+  const conflicts = useMemo(() => {
+    const seen = new Map();
+    const bad = new Set();
+    for (const r of rules) {
+      if (r.currentState === '' || r.read === '') continue;
+      const key = `${r.currentState}\u0000${r.read}`;
+      if (seen.has(key)) {
+        bad.add(r.id);
+        bad.add(seen.get(key));
+      } else {
+        seen.set(key, r.id);
+      }
+    }
+    return bad;
   }, [rules]);
 
   const updateRule = (id, patch) => {
-    if (isRunning) return;
     onRulesChange(rules.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   };
 
-  const removeRule = (id) => {
-    if (isRunning) return;
-    if (rules.length <= 1) {
-      onRulesChange([makeEmptyRule()]);
-      return;
-    }
-    onRulesChange(rules.filter((r) => r.id !== id));
-  };
-
   const addRule = () => {
-    if (isRunning) return;
     onRulesChange([...rules, makeEmptyRule()]);
   };
 
-  const clearAll = () => {
-    if (isRunning) return;
-    onRulesChange([makeEmptyRule()]);
+  const removeRule = (id) => {
+    const next = rules.filter((r) => r.id !== id);
+    onRulesChange(next.length ? next : [makeEmptyRule()]);
   };
 
   const loadExample = () => {
-    if (isRunning) return;
-    onRulesChange(makeExampleRules());
+    onRulesChange(EXAMPLE_RULES.map((r) => ({ ...r, id: uid() })));
   };
 
-  const exportAs = (format) => {
-    const text =
-      format === 'json'
-        ? JSON.stringify(
-            rules.map(({ id, ...rest }) => rest),
-            null,
-            2
-          )
-        : rules
-            .filter((r) => r.currentState && r.read && r.nextState && r.write)
-            .map(
-              (r) =>
-                `${r.currentState} ${r.read} -> ${r.nextState} ${r.write} ${r.move}`
-            )
-            .join('\n');
-    navigator.clipboard?.writeText(text).catch(() => {});
-    setExportOpen(false);
+  const clearAll = () => {
+    onRulesChange([makeEmptyRule()]);
+  };
+
+  const exportRules = () => {
+    const text = rules
+      .filter(
+        (r) =>
+          r.currentState !== '' &&
+          r.read !== '' &&
+          r.write !== '' &&
+          r.nextState !== ''
+      )
+      .map(
+        (r) =>
+          `(${r.currentState},${r.read},${r.write},${r.nextState},${r.move})`
+      )
+      .join('\n');
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    }
   };
 
   return (
     <section className={styles.wrapper}>
       <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <span className={styles.title}>TRANSITION RULES</span>
-        </div>
-
-        <div className={styles.toolbar}>
+        <span className={styles.title}>RULES</span>
+        <div className={styles.headerActions}>
           <button
             type="button"
-            className={styles.btnGhost}
-            onClick={clearAll}
-            disabled={isRunning}
-          >
-            Clear
-          </button>
-          <button
-            type="button"
-            className={styles.btnGhost}
+            className={styles.headerBtn}
             onClick={loadExample}
             disabled={isRunning}
           >
-            Load example
+            load example
           </button>
-          <div className={styles.exportWrap} ref={exportRef}>
-            <button
-              type="button"
-              className={styles.btnAccent}
-              onClick={() => setExportOpen((v) => !v)}
-              disabled={isRunning}
-            >
-              Export
-              <span className={styles.caret}>▾</span>
-            </button>
-            {exportOpen && !isRunning && (
-              <div className={styles.exportMenu}>
-                <button onClick={() => exportAs('text')}>
-                  copy as text
-                </button>
-                <button onClick={() => exportAs('json')}>
-                  copy as JSON
-                </button>
-              </div>
-            )}
-          </div>
+          <button
+            type="button"
+            className={styles.headerBtn}
+            onClick={exportRules}
+          >
+            copy tuples
+          </button>
         </div>
       </div>
 
-      <div className={styles.table}>
-        <div className={styles.tableHead}>
-          <span className={styles.colAddr}>#</span>
-          <span className={styles.colState}>STATE</span>
-          <span className={styles.colRead}>READ</span>
-          <span className={styles.colArrow}> </span>
-          <span className={styles.colState}>NEXT</span>
-          <span className={styles.colWrite}>WRITE</span>
-          <span className={styles.colMove}>MOVE</span>
-          <span className={styles.colAction}> </span>
-        </div>
+      <div className={styles.tableHead}>
+        <span>#</span>
+        <span>STATE</span>
+        <span>READ</span>
+        <span className={styles.headArrow}>→</span>
+        <span>WRITE</span>
+        <span>NEXT</span>
+        <span>MOVE</span>
+        <span />
+      </div>
 
-        <div className={styles.tableBody}>
-          {rules.map((rule, idx) => {
-            const isActive = rule.id === activeRuleId;
-            return (
-              <div
-                key={rule.id}
-                className={`${styles.row} ${
-                  isActive ? styles.rowActive : ''
-                }`}
-              >
-                <span className={styles.addr}>
-                  {String(idx).padStart(2, '0')}
-                </span>
+      <div className={styles.tableBody}>
+        {rules.map((rule, i) => {
+          const isActive = rule.id === activeRuleId;
+          const isConflict = conflicts.has(rule.id);
+          return (
+            <div
+              key={rule.id}
+              className={`${styles.row} ${isActive ? styles.rowActive : ''} ${
+                isConflict ? styles.rowConflict : ''
+              }`}
+            >
+              <span className={styles.index}>{i + 1}</span>
 
-                <input
-                  className={styles.input}
-                  value={rule.currentState}
-                  onChange={(e) =>
-                    updateRule(rule.id, { currentState: e.target.value })
-                  }
-                  placeholder="q0"
-                  disabled={isRunning}
-                  spellCheck={false}
-                />
+              <input
+                className={styles.input}
+                value={rule.currentState}
+                onChange={(e) =>
+                  updateRule(rule.id, {
+                    currentState: e.target.value.replace(/\s/g, ''),
+                  })
+                }
+                placeholder="1"
+                disabled={isRunning}
+                spellCheck={false}
+              />
 
-                <input
-                  className={`${styles.input} ${styles.inputSym}`}
-                  value={rule.read}
-                  onChange={(e) =>
-                    updateRule(rule.id, { read: e.target.value.slice(-1) })
-                  }
-                  placeholder="0"
-                  disabled={isRunning}
-                  maxLength={1}
-                  spellCheck={false}
-                />
+              <input
+                className={`${styles.input} ${styles.inputSym}`}
+                value={rule.read}
+                onChange={(e) =>
+                  updateRule(rule.id, {
+                    read: e.target.value.replace(/\s/g, '').slice(-1),
+                  })
+                }
+                placeholder="0"
+                maxLength={1}
+                disabled={isRunning}
+                spellCheck={false}
+              />
 
-                <span className={styles.arrow}>→</span>
+              <span className={styles.rowArrow}>→</span>
 
-                <input
-                  className={styles.input}
-                  value={rule.nextState}
-                  onChange={(e) =>
-                    updateRule(rule.id, { nextState: e.target.value })
-                  }
-                  placeholder="q1"
-                  disabled={isRunning}
-                  spellCheck={false}
-                />
+              <input
+                className={`${styles.input} ${styles.inputSym}`}
+                value={rule.write}
+                onChange={(e) =>
+                  updateRule(rule.id, {
+                    write: e.target.value.replace(/\s/g, '').slice(-1),
+                  })
+                }
+                placeholder="1"
+                maxLength={1}
+                disabled={isRunning}
+                spellCheck={false}
+              />
 
-                <input
-                  className={`${styles.input} ${styles.inputSym}`}
-                  value={rule.write}
-                  onChange={(e) =>
-                    updateRule(rule.id, { write: e.target.value.slice(-1) })
-                  }
-                  placeholder="1"
-                  disabled={isRunning}
-                  maxLength={1}
-                  spellCheck={false}
-                />
+              <input
+                className={styles.input}
+                value={rule.nextState}
+                onChange={(e) =>
+                  updateRule(rule.id, {
+                    nextState: e.target.value.replace(/\s/g, ''),
+                  })
+                }
+                placeholder="1"
+                disabled={isRunning}
+                spellCheck={false}
+              />
 
-                <div className={styles.moveGroup}>
-                  {MOVE_OPTIONS.map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      className={`${styles.moveBtn} ${
-                        rule.move === m ? styles.moveBtnActive : ''
-                      }`}
-                      onClick={() => updateRule(rule.id, { move: m })}
-                      disabled={isRunning}
-                    >
-                      {m}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  className={styles.deleteBtn}
-                  onClick={() => removeRule(rule.id)}
-                  disabled={isRunning}
-                  aria-label="delete rule"
-                  title="delete rule"
-                >
-                  ×
-                </button>
+              <div className={styles.moveGroup}>
+                {MOVE_OPTIONS.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    className={`${styles.moveBtn} ${
+                      rule.move === m ? styles.moveBtnActive : ''
+                    }`}
+                    onClick={() => updateRule(rule.id, { move: m })}
+                    disabled={isRunning}
+                  >
+                    {m}
+                  </button>
+                ))}
               </div>
-            );
-          })}
-        </div>
 
-        <button
-          type="button"
-          className={styles.addRow}
-          onClick={addRule}
-          disabled={isRunning}
-        >
-          + add rule
-        </button>
+              <button
+                type="button"
+                className={styles.removeBtn}
+                onClick={() => removeRule(rule.id)}
+                disabled={isRunning}
+                aria-label="remove rule"
+              >
+                ×
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       <div className={styles.footer}>
-        <span className={styles.stat}>
-          rules <strong>{rules.length}</strong>
-        </span>
-        <span className={styles.stat}>
-          complete <strong>{stats.defined}</strong>
-        </span>
-        <span className={styles.stat}>
-          states <strong>{stats.states}</strong>
-        </span>
+        <div className={styles.footerActions}>
+          <button
+            type="button"
+            className={styles.footerBtn}
+            onClick={addRule}
+            disabled={isRunning}
+          >
+            + add rule
+          </button>
+          <button
+            type="button"
+            className={styles.footerBtnGhost}
+            onClick={clearAll}
+            disabled={isRunning}
+          >
+            clear
+          </button>
+        </div>
+        <div className={styles.stats}>
+          <span className={styles.stat}>
+            rules <strong>{rules.length}</strong>
+          </span>
+          <span
+            className={`${styles.stat} ${
+              conflicts.size > 0 ? styles.statWarn : ''
+            }`}
+          >
+            conflicts <strong>{conflicts.size}</strong>
+          </span>
+        </div>
       </div>
     </section>
   );

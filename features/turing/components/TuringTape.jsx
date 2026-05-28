@@ -11,18 +11,78 @@ export default function TuringTape({
   pointerPos,
   originIndex,
   state,
+  blank = 'b',
   isRunning,
   isHighlighted = false,
   onCellChange,
 }) {
   const scrollRef = useRef(null);
   const didInitialCenterRef = useRef(false);
+  const inputRefs = useRef([]);
 
-  // Center on pointer: instant on first mount, smooth afterwards.
-  // During execution we always re-center so the head stays visible.
+  // Read isRunning inside the stable native wheel listener.
+  const isRunningRef = useRef(isRunning);
+  useEffect(() => {
+    isRunningRef.current = isRunning;
+  }, [isRunning]);
+
+  // --- smooth horizontal scroll engine (rAF lerp) ------------------------
+  const targetRef = useRef(null);
+  const rafRef = useRef(null);
+
+  const animate = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || targetRef.current == null) {
+      rafRef.current = null;
+      return;
+    }
+    const cur = el.scrollLeft;
+    const diff = targetRef.current - cur;
+    if (Math.abs(diff) < 0.5) {
+      el.scrollLeft = targetRef.current;
+      targetRef.current = null;
+      rafRef.current = null;
+      return;
+    }
+    // Ease toward the target — gives the scroll a fluid feel.
+    el.scrollLeft = cur + diff * 0.2;
+    rafRef.current = requestAnimationFrame(animate);
+  }, []);
+
+  const cancelAnim = useCallback(() => {
+    if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+    rafRef.current = null;
+    targetRef.current = null;
+  }, []);
+
+  const smoothScrollTo = useCallback(
+    (left) => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const max = el.scrollWidth - el.clientWidth;
+      targetRef.current = Math.max(0, Math.min(max, left));
+      if (rafRef.current == null) {
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    },
+    [animate]
+  );
+
+  const smoothScrollBy = useCallback(
+    (delta) => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const base = targetRef.current == null ? el.scrollLeft : targetRef.current;
+      smoothScrollTo(base + delta);
+    },
+    [smoothScrollTo]
+  );
+
+  // Center on the machine head: instant on first mount, smooth afterwards.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
+    cancelAnim(); // don't fight a wheel/edit animation
     const targetLeft =
       pointerPos * CELL_WIDTH - el.clientWidth / 2 + CELL_WIDTH / 2;
     el.scrollTo({
@@ -30,7 +90,7 @@ export default function TuringTape({
       behavior: didInitialCenterRef.current ? 'smooth' : 'auto',
     });
     didInitialCenterRef.current = true;
-  }, [pointerPos]);
+  }, [pointerPos, cancelAnim]);
 
   // Re-center on resize so the head doesn't drift off-screen.
   useEffect(() => {
@@ -45,26 +105,62 @@ export default function TuringTape({
     return () => window.removeEventListener('resize', onResize);
   }, [pointerPos]);
 
-  // Convert vertical wheel scroll → horizontal tape scroll.
-  // Disabled while running so the user can't shift the view away from the head.
-  const handleWheel = useCallback(
-    (e) => {
-      if (isRunning) return;
+  // Trap the wheel over the tape: scroll the tape, never the page. A native,
+  // non-passive listener is required so preventDefault() actually works
+  // (React's synthetic onWheel is passive and can't stop the page).
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onWheel = (e) => {
+      if (isRunningRef.current) return; // tape locked while running
+      const max = el.scrollWidth - el.clientWidth;
+      if (max <= 0) return;
+      e.preventDefault();
+      const delta =
+        Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      smoothScrollBy(delta);
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [smoothScrollBy]);
+
+  // Cancel any in-flight animation on unmount.
+  useEffect(() => cancelAnim, [cancelAnim]);
+
+  // Smoothly nudge a cell into view (used by the auto-advance caret).
+  const ensureCellVisible = useCallback(
+    (index) => {
       const el = scrollRef.current;
       if (!el) return;
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        e.preventDefault();
-        el.scrollLeft += e.deltaY;
+      const cellLeft = index * CELL_WIDTH;
+      const cellRight = cellLeft + CELL_WIDTH;
+      const viewLeft = el.scrollLeft;
+      const viewRight = viewLeft + el.clientWidth;
+      if (cellRight > viewRight) {
+        smoothScrollTo(cellRight - el.clientWidth + CELL_WIDTH);
+      } else if (cellLeft < viewLeft) {
+        smoothScrollTo(cellLeft - CELL_WIDTH);
       }
     },
-    [isRunning]
+    [smoothScrollTo]
   );
 
-  const handleCellInput = (idx, value) => {
+  const handleCellInput = (idx, rawValue) => {
     if (isRunning) return;
-    // Only keep the last non-space character; treat empty as blank "_".
-    const cleaned = value.replace(/\s/g, '').slice(-1);
-    onCellChange(idx, cleaned === '' ? '_' : cleaned);
+    // Keep the last non-space character; empty means the cell is blank.
+    const cleaned = rawValue.replace(/\s/g, '').slice(-1);
+    onCellChange(idx, cleaned === '' ? blank : cleaned);
+
+    // Auto-advance: after writing a character, jump to the next cell and
+    // select its contents so continued typing overwrites what's there.
+    if (cleaned !== '') {
+      const nextEl = inputRefs.current[idx + 1];
+      if (nextEl) {
+        nextEl.focus({ preventScroll: true });
+        nextEl.select();
+        ensureCellVisible(idx + 1);
+      }
+    }
   };
 
   return (
@@ -83,7 +179,7 @@ export default function TuringTape({
           </div>
           <div className={`${styles.pill} ${styles.pillAccent}`}>
             <span className={styles.pillLabel}>state</span>
-            <span className={styles.pillValue}>{state || 'q0'}</span>
+            <span className={styles.pillValue}>{state || '1'}</span>
           </div>
         </div>
       </div>
@@ -91,7 +187,6 @@ export default function TuringTape({
       <div
         ref={scrollRef}
         className={`${styles.scroll} ${isRunning ? styles.scrollLocked : ''}`}
-        onWheel={handleWheel}
       >
         <div
           className={styles.track}
@@ -118,13 +213,7 @@ export default function TuringTape({
               className={styles.pointerSvg}
             >
               <defs>
-                <linearGradient
-                  id="pointerFill"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
+                <linearGradient id="pointerFill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="var(--accent-primary)" />
                   <stop offset="100%" stopColor="var(--accent-tertiary)" />
                 </linearGradient>
@@ -142,7 +231,7 @@ export default function TuringTape({
                 textAnchor="middle"
                 className={styles.pointerText}
               >
-                {state || 'q0'}
+                {state || '1'}
               </text>
             </svg>
           </div>
@@ -153,6 +242,7 @@ export default function TuringTape({
               const offset = Math.abs(i - originIndex);
               const isHead = i === pointerPos;
               const isOrigin = i === originIndex;
+              const isBlank = value === blank;
               return (
                 <div
                   key={i}
@@ -169,12 +259,15 @@ export default function TuringTape({
                     {offset}
                   </span>
                   <input
+                    ref={(el) => {
+                      inputRefs.current[i] = el;
+                    }}
                     className={styles.cellInput}
-                    value={value === '_' ? '' : value}
+                    value={isBlank ? '' : value}
                     onChange={(e) => handleCellInput(i, e.target.value)}
                     disabled={isRunning}
                     maxLength={1}
-                    placeholder="_"
+                    placeholder={blank}
                     spellCheck={false}
                     aria-label={`cell at offset ${i - originIndex}`}
                   />
@@ -189,7 +282,7 @@ export default function TuringTape({
         <span className={styles.footerHint}>
           {isRunning
             ? 'execution in progress · tape locked'
-            : 'scroll horizontally or use the wheel · click a cell to edit'}
+            : 'scroll over the tape to pan · type into a cell to write and jump to the next'}
         </span>
       </div>
     </section>
