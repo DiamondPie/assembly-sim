@@ -1,0 +1,253 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem 1.25rem 1rem;
+  background: var(--content-1);
+  border: 1px solid var(--border-color-1);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-base);
+}
+
+.wrapperRunning {
+  border-color: color-mix(in oklab, var(--accent-primary), transparent 70%);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent-primary), transparent 85%),
+              0 0 60px -10px color-mix(in oklab, var(--accent-primary), transparent 70%);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 0.25rem;
+}
+
+.title {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.stats {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.7rem;
+  background: var(--content-1);
+  border: 1px solid var(--border-color-1);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.72rem;
+}
+
+.pillLabel {
+  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+}
+
+.pillValue {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.pillAccent {
+  background: color-mix(in oklab, var(--accent-primary), transparent 90%);
+  border-color: color-mix(in oklab, var(--accent-primary), transparent 70%);
+}
+
+.pillAccent .pillValue {
+  color: var(--accent-primary);
+}
+
+/* ---------- scrollable track ---------- */
+
+.scroll {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background:
+    radial-gradient(
+      ellipse 70% 100% at 50% 0%,
+      color-mix(in oklab, var(--accent-primary), transparent 92%),
+      transparent 70%
+    ),
+    var(--color-black);
+  border: 1px solid var(--border-color-1);
+  border-radius: var(--radius-sm);
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-tertiary) transparent;
+}
+
+.scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: var(--radius-full);
+}
+.scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+.scrollLocked {
+  cursor: not-allowed;
+}
+
+.track {
+  position: relative;
+  display: block;
+  padding-bottom: 1rem;
+}
+
+/* ---------- pointer ---------- */
+
+.pointer {
+  position: absolute;
+  top: 0;
+  width: 64px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  transition: left var(--transition-base);
+  filter: drop-shadow(0 4px 16px color-mix(in oklab, var(--accent-primary), transparent 60%));
+}
+
+.pointerSvg {
+  display: block;
+  overflow: visible;
+}
+
+.pointerText {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--bg-primary);
+  letter-spacing: 0.02em;
+}
+
+.pointerHighlighted {
+  animation: pulse 0.8s var(--transition-base);
+}
+
+@keyframes pulse {
+  0%   { filter: drop-shadow(0 4px 16px color-mix(in oklab, var(--accent-primary), transparent 60%)); }
+  50%  { filter: drop-shadow(0 4px 28px var(--accent-primary)); }
+  100% { filter: drop-shadow(0 4px 16px color-mix(in oklab, var(--accent-primary), transparent 60%)); }
+}
+
+/* ---------- cells ---------- */
+
+.cells {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 84px;
+  border-right: 1px solid var(--border-color-1);
+  background: transparent;
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.cell:first-child {
+  border-left: 1px solid var(--border-color-1);
+}
+
+.cell:hover {
+  background: color-mix(in oklab, var(--text-primary), transparent 96%);
+}
+
+.cellHead {
+  background: color-mix(in oklab, var(--accent-primary), transparent 92%);
+}
+
+.cellHead:hover {
+  background: color-mix(in oklab, var(--accent-primary), transparent 88%);
+}
+
+.cellOrigin::after {
+  content: '';
+  position: absolute;
+  inset: 4px 4px 4px 4px;
+  border: 1px dashed color-mix(in oklab, var(--accent-secondary), transparent 60%);
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.cellLabel {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+  padding: 0.35rem 0 0.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.cellLabelHead {
+  color: var(--accent-primary);
+}
+
+.cellInput {
+  flex: 1;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  text-align: center;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  caret-color: var(--accent-primary);
+  padding: 0;
+}
+
+.cellInput:disabled {
+  cursor: not-allowed;
+  color: var(--text-primary);
+  -webkit-text-fill-color: var(--text-primary);
+  opacity: 1;
+}
+
+.cellInput::placeholder {
+  color: var(--text-tertiary);
+  font-weight: 300;
+}
+
+.cellInput:focus {
+  background: color-mix(in oklab, var(--accent-primary), transparent 95%);
+}
+
+/* ---------- footer ---------- */
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 0.25rem;
+}
+
+.footerHint {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+}
